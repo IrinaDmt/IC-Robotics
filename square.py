@@ -23,7 +23,7 @@ BrickPiSetupSensors()   #Send the properties of sensors to BrickPi
 
 #Move Forward
 def fwd(no_seconds):
-  print "Going Forward"
+  print "- Going Forward"
   BrickPi.MotorSpeed[motor1] = -speed
   BrickPi.MotorSpeed[motor2] = -speed
   timer(no_seconds)
@@ -55,7 +55,10 @@ def timer(no_seconds):
     BrickPiUpdateValues()            # Ask BrickPi to update values for sensors/motors
     time.sleep(.1)                   # sleep for 100 ms
 
-while (raw_input("Enter 1 for a square or 0 to stop:") == 1):
-  for i in range(4):
-    fwd(3)
-    left(2)
+while (True):
+  if (raw_input("Enter 1 for a square or 0 to stop:") == "1"): 
+    for i in range(4):
+      fwd(3)
+      left(2)
+  else:
+    stop()
