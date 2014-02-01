@@ -21,7 +21,7 @@ motor2 = PORT_B
 speed_left = 0 
 speed_right = 0
 no_seconds_forward = 0.8775 # 30 cm
-no_seconds_left = 1.57 # 90 deg
+no_seconds_left = 1.03 # 90 deg
 
 BrickPi.MotorEnable[motor1] = 1 #Enable the Motor A
 BrickPi.MotorEnable[motor2] = 1 #Enable the Motor B
@@ -36,7 +36,7 @@ BrickPiSetupSensors()   #Send the properties of sensors to BrickPi
 def fwd(no_seconds):
   global speed_left, speed_right
   print "- Going Forward"
-  speed_right = 200
+  speed_right = 210
   speed_left = 200
   BrickPi.MotorSpeed[motor1] = speed_right
   BrickPi.MotorSpeed[motor2] = speed_left
@@ -58,10 +58,10 @@ def fwd_amt(distance):
 def left(no_seconds):
   print "- Going left"
   global speed_left, speed_right
-  speed_left = 204
-  speed_right = -200
-  BrickPi.MotorSpeed[motor1] = int(speed_left * 0.2)
-  BrickPi.MotorSpeed[motor2] = int(speed_right * 0.2)
+  speed_left = 80
+  speed_right = -78
+  BrickPi.MotorSpeed[motor1] = speed_left
+  BrickPi.MotorSpeed[motor2] = speed_right
   timer(no_seconds)
   
 #Move backward
@@ -82,47 +82,27 @@ def stop():
 
 #Turn 90 degrees left
 def left90deg():
+  global no_seconds_left
   left(no_seconds_left)
 
 #Timer
-def timer(no_seconds, callback = None):
-  global speed_left, speed_right
+def timer(no_seconds):
   ot = time.time()
-  while(time.time() - ot < no_seconds):    #running while loop for no_seconds seconds
-    BrickPiUpdateValues()            # Ask BrickPi to update values for sensors/motors
-#    if callback != None:
-#      whichWheel = callback()
-    time.sleep(.1)                   # sleep for 100 ms
-    '''    if callback != None:
-      if whichWheel == "left":
-        speed_left -= 5
-      elif whichWheel == "right":
-        speed_right -= 5
-    BrickPi.MotorSpeed[motor1] = speed_left
-    BrickPi.MotorSpeed[motor2] = speed_right'''
-    # print "left ", BrickPi.Encoder[motor1], " - right ", BrickPi.Encoder[motor2]
-    print speed_left, speed_right
+  while(time.time() - ot < no_seconds): # running while loop for no_seconds seconds
+    BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
+    time.sleep(.01)                   	# sleep for 100 ms
 
 def adjustValues():
   global speed_left, speed_right
-  if BrickPi.Encoder[motor1] > BrickPi.Encoder[motor2]:
+  if BrickPi.E/leftncoder[motor1] > BrickPi.Encoder[motor2]:
     speed_left += 5
     return "left"
   elif BrickPi.Encoder[motor1] < BrickPi.Encoder[motor2]:
     speed_right += 5
     return "right"
 
-while (True):
-  input = raw_input("Enter 1 for a square or 0 to stop:")
-  BrickPi.Encoder[motor1] = 0
-  BrickPi.Encoder[motor2] = 0
-#  for i in range(4):
-#    fwd_amt(10)
-#    time.sleep(1)
-  left(3)
-''' if (input == "1"):
-    fwd_amt(1)
-    time.sleep(1)
-  elif (input=="2"):
-    left(20)
-'''
+for i in range(4):
+  fwd(1)
+  time.sleep(1)
+  left90deg()
+  time.sleep(0.5)
