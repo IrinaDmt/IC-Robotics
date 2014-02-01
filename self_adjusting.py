@@ -65,12 +65,7 @@ def fwd_amt(distance):
     BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
     adjustValues(degrees, offset_1, offset_2)
     time.sleep(.001)                   	# sleep for 100 ms
-'''  speed_left = 200
-  speed_right = 204
-  BrickPi.MotorSpeed[motor1] = speed_left
-  BrickPi.MotorSpeed[motor2] = speed_right
-  time.sleep(0.3)'''
-  
+    
 def adjustValues(degrees, offset_1, offset_2):
   global speed_left, speed_right
   rot1 = BrickPi.Encoder[motor1] - offset_1
@@ -88,7 +83,7 @@ def adjustValues(degrees, offset_1, offset_2):
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
   print ">> L:", speed_left, "(",(rot1 / degrees * 100),"%) R:", speed_right, "(",(rot2 / degrees * 100),"%)"
-  
+
 #Move Left
 def left(no_seconds):
   print "- Going left"
@@ -118,8 +113,47 @@ def stop():
 
 #Turn 90 degrees left
 def left90deg():
-  global no_seconds_left
-  left(no_seconds_left)
+  global WHEELRADIUS, speed_left, speed_right
+  axle = 6
+  distance = axle * math.pi / 2 # distance for 90 degrees when the radius is axle
+  BrickPiUpdateValues()
+  offset_1 = BrickPi.Encoder[motor1]
+  offset_2 = BrickPi.Encoder[motor2]
+  speed_left = -200
+  speed_right = 204
+  circumference = 2 * math.pi * WHEELRADIUS
+  print "- Going forward ", distance, " cm"
+  no_rotations = distance / circumference
+  degrees  = no_rotations * 720
+  BrickPi.MotorSpeed[motor1] = speed_left
+  BrickPi.MotorSpeed[motor2] = speed_right
+
+  print "deg", degrees, no_rotations
+
+  while(BrickPi.Encoder[motor1] - offset_1 < degrees
+    and BrickPi.Encoder[motor2] - offset_2 < degrees): # running while loop for no_seconds seconds
+    BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
+    adjustValuesLeft(degrees, offset_1, offset_2)
+    time.sleep(.001)                   	# sleep for 100 ms
+    
+def adjustValuesLeft(degrees, offset_1, offset_2):
+  global speed_left, speed_right
+  rot1 = BrickPi.Encoder[motor1] - offset_1
+  rot2 = BrickPi.Encoder[motor2] - offset_2
+  target_speed = 202
+  k = 1 # coefficient
+  if rot1 < rot2:
+    diff = rot2 - rot1
+    speed_left = (-1) * (target_speed + diff * k)
+    speed_right = target_speed - diff * k
+  elif rot1 > rot2: 
+    diff = rot1 - rot2
+    speed_left = (-1) * (target_speed - diff * k)
+    speed_right = target_speed + diff * k
+  BrickPi.MotorSpeed[motor1] = speed_left
+  BrickPi.MotorSpeed[motor2] = speed_right
+  print ">> L:", speed_left, "(",(rot1 / degrees * 100),"%) R:", speed_right, "(",(rot2 / degrees * 100),"%)"
+
 
 #Timer
 def timer(no_seconds):
