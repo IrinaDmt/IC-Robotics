@@ -129,11 +129,11 @@ def left90deg():
   BrickPi.MotorSpeed[motor2] = speed_right
 
   print "deg", degrees, no_rotations
-
-  while(BrickPi.Encoder[motor1] - offset_1 < degrees
-    and BrickPi.Encoder[motor2] - offset_2 < degrees): # running while loop for no_seconds seconds
+  while(abs(BrickPi.Encoder[motor1] - offset_1) < degrees
+    and abs(BrickPi.Encoder[motor2] - offset_2) < degrees): # running while loop for no_seconds seconds
     BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
     adjustValuesLeft(degrees, offset_1, offset_2)
+    print ":) ", BrickPi.Encoder[motor1]
     time.sleep(.001)                   	# sleep for 100 ms
     
 def adjustValuesLeft(degrees, offset_1, offset_2):
@@ -171,4 +171,7 @@ for i in range(1):
     stop()
   if input == "w":
     fwd_amt(30)
+    stop()
+  if input == "a":
+    left90deg()
     stop()
