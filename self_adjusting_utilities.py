@@ -30,6 +30,36 @@ BrickPi.Encoder[motor2] = 0
 
 BrickPiSetupSensors()   #Send the properties of sensors to BrickPi
 
+#Set speed to custom value
+def set_speeds(l, r):
+  global speed_left, speed_right, motor1, motor2
+  speed_left = l
+  speed_right = r
+  BrickPi.MotorSpeed[motor1] = speed_left
+  BrickPi.MotorSpeed[motor2] = speed_right
+  BrickPiUpdateValues()
+
+def get_speeds():
+  global motor1, motor2
+  BrickPiUpdateValues()
+  return BrickPi.MotorSpeed[motor1], BrickPi.MotorSpeed[motor2]
+
+def inc_speed(val):
+  global speed_left, speed_right
+  speed_left = speed_left +  val
+  speed_right = speed_right + val
+  BrickPi.MotorSpeed[motor1] = speed_left
+  BrickPi.MotorSpeed[motor2] = speed_right
+  BrickPiUpdateValues()
+
+def dec_speed(val):
+  global speed_left, speed_right
+  speed_left = speed_left -  val
+  speed_right = speed_right - val
+  BrickPi.MotorSpeed[motor1] = speed_left
+  BrickPi.MotorSpeed[motor2] = speed_right
+  BrickPiUpdateValues()
+
 #Move Forward
 def fwd(distance):
   global WHEELRADIUS, speed_left, speed_right
@@ -106,7 +136,6 @@ def adjustValuesBack(degrees, offset_1, offset_2):
 
 #Stop
 def stop():
-  print "- Stopping"
   BrickPi.MotorSpeed[motor1] = 0
   BrickPi.MotorSpeed[motor2] = 0
   BrickPiUpdateValues()
@@ -161,5 +190,3 @@ def right(deg):
 #90 degrees Right
 def right90deg():
   right(90)
-
-right90deg()
