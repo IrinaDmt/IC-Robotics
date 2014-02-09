@@ -44,7 +44,6 @@ def fwd(distance):
   degrees  = no_rotations * 720
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print "deg", degrees, no_rotations
   while(BrickPi.Encoder[motor1] - offset_1 < degrees
     and BrickPi.Encoder[motor2] - offset_2 < degrees): # running while loop for no_seconds seconds
     BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
@@ -67,7 +66,6 @@ def adjustValues(degrees, offset_1, offset_2):
     speed_right = target_speed + diff * k
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print ">> L:", speed_left, "(",(rot1 / degrees * 100),"%) R:", speed_right, "(",(rot2 / degrees * 100),"%)"
 
 #Move backward
 def back(distance):
@@ -83,7 +81,6 @@ def back(distance):
   degrees  = no_rotations * 720
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print "deg", degrees, no_rotations
   while(offset_1 - BrickPi.Encoder[motor1] < degrees
     and offset_2 - BrickPi.Encoder[motor2] < degrees): 
     BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
@@ -106,7 +103,6 @@ def adjustValuesBack(degrees, offset_1, offset_2):
     speed_right = target_speed + diff * k
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print ">> L:", speed_left, "(",(spins1 / degrees * 100),"%) R:", speed_right, "(",(spins2 / degrees * 100),"%)"
 
 #Stop
 def stop():
@@ -144,7 +140,6 @@ def turn(deg, orientation):
   #Start turning 
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print "deg", degrees, no_rotations
  
   while(abs(BrickPi.Encoder[motor1] - offset_1) < degrees
     and abs(BrickPi.Encoder[motor2] - offset_2) < degrees): 
@@ -167,44 +162,4 @@ def right(deg):
 def right90deg():
   right(90)
 
-#Controller output
-input = raw_input(">")
-while (input != ""):
-  if input == "s":
-    dist = raw_input("distance in cm>")
-    if dist == "":
-      dist = 20 
-    back(float(dist))
-    stop()
-  elif input == "w":
-    dist = raw_input("distance in cm>")
-    if dist == "":
-      dist = 20
-    fwd(float(dist))
-    stop()
-  elif input == "a":
-    angle = raw_input("angle>")
-    left(float(angle))
-    stop()
-  elif input == "d":
-    angle = raw_input("angle>")
-    right(float(angle))
-    stop()
-  elif input == "square" or input == "sq":
-    size = raw_input("size>")
-    if size == "":
-      size = 15
-    for i in range(4):
-      fwd(float(size))
-      stop()
-      left90deg()
-      stop()
-  elif input == "stop" or input == "exit":
-    break
-  elif input == "left":
-    left90deg()
-    stop()
-  elif input == "right":
-    right90deg()
-    stop()
-  input = raw_input(">")
+right90deg()
