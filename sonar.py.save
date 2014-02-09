@@ -1,0 +1,30 @@
+from BrickPi import *
+import math
+from self_adjusting_utilities import *
+
+SONAR = PORT_1
+DESIRED_DISTANCE = 30 #cm
+
+
+BrickPiSetup()
+
+BrickPi.SensorType[SONAR] = TYPE_SENSOR_ULTRASONIC_CONT
+
+BrickPiSetupSensors()
+
+distance_measurements = []
+
+while len(distance_measurements) < 9:
+  distance_measurements.insert(0, BrickPi.Sensor[SONAR])
+
+while True:
+  distance_measurements.insert(0, Br
+  if not result:
+    #calculate median distance over last 10 results
+     = BrickPi.Sensor[SONAR]
+    if distance > DESIRED_DISTANCE:
+      print "too far away" #set 'proportional gain' speed
+    elif distance < DESIRED_DISTANCE:
+      print "too close" #set 'proportional gain speed backwards
+    else:
+      print "correct distance" #stop
