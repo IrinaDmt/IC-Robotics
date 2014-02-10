@@ -60,6 +60,12 @@ def dec_speed(val):
   BrickPi.MotorSpeed[motor2] = speed_right
   BrickPiUpdateValues()
 
+def fwd_simple():
+  BrickPi.MotorSpeed[motor1] = 100
+  BrickPi.MotorSpeed[motor2] = 102
+  BrickPiUpdateValues()
+  time.sleep(0.2)
+
 #Move Forward
 def fwd(distance):
   global WHEELRADIUS, speed_left, speed_right
@@ -69,7 +75,6 @@ def fwd(distance):
   speed_left = 200
   speed_right = 204
   circumference = 2 * math.pi * WHEELRADIUS
-  print "- Going forward ", distance, " cm"
   no_rotations = distance / circumference
   degrees  = no_rotations * 720
   BrickPi.MotorSpeed[motor1] = speed_left
