@@ -42,13 +42,11 @@ def get_distance():
   return distance
 
 #initialise to medium speeds at the beggining of the program
-BrickPi.MotorSpeed[PORT_A] = INIT_SPEED
-BrickPi.MotorSpeed[PORT_B] = INIT_SPEED + 2
-
-while get_distance() > 60:
-  BrickPiUpdateValues()
-
 while True:
+  while get_distance() > 60:
+    BrickPi.MotorSpeed[PORT_A] = INIT_SPEED
+    BrickPi.MotorSpeed[PORT_B] = INIT_SPEED + 2
+    BrickPiUpdateValues()
   diff = get_distance() - DESIRED_DISTANCE
   if diff > 1 or diff < -1:
     const = abs(INIT_SPEED / diff)
