@@ -101,6 +101,8 @@ def adjustValues(degrees, offset_1, offset_2):
     speed_right = target_speed + diff * k
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
+  print ">> L:", speed_left, "(",(rot1 / degrees * 100),"%) R:", speed_right, "    (",(rot2 / degrees * 100),"%)"
+
 
 #Move backward
 def back(distance):
