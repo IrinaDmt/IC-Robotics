@@ -1,0 +1,47 @@
+import math
+import random
+
+NUMBER_OF_PARTICLES = 100
+mu = 0
+distance_sigma = 5 #standard deviation
+angle_sigma = 1
+
+particle_list = []
+
+class Particle:
+  def __init__(self, x, y, theta, weight):
+    self.x = x
+    self.y = y
+    self.theta = theta
+    self.weight = weight
+    self.e = random.gauss(mu, sigma)
+    self.f = random.gauss(mu, sigma)
+    self.g = random.gauss(mu, sigma)
+  def update_forward(self, distance):
+    self.x = self.x + (distance + self.e)*math.cos(self.theta)
+    self.y = self.y + (distance + self.e)*math.sin(self.theta)
+    self.theta = self.theta + self.f
+  def update_rotation(self, angle):
+    self.theta = self.theta + angle + self.g
+  def state_tuple(self):
+    return self.x, self.y, self.theta
+
+#import these using "import particles",
+# then call using namespace identifier, e.g. particles.initialise()
+def initialise():
+  for i in range(NUMBER_OF_PARTICLES):
+    particle_list.append(Particle(0,0,0,0))
+
+def draw():
+  particle_tuples = []
+  for p in particle_list:
+    particle_tuples.append( (p.x, p.y, p.theta) )
+  print "drawParticles:" + str(particle_tuples)
+
+def update_forward(distance):
+  for p in particle_list:
+    p.update_forward(distance)
+
+def update_rotate(angle):
+  for p in particle_list:
+    p.update_rotation(angle)
