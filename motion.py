@@ -47,7 +47,6 @@ def checkToDraw(offset):
 
 def fwd_amt(distance):
   global WHEELRADIUS, speed_left, speed_right, particle_counter, circumference
-  particle_counter = 0
   BrickPiUpdateValues()
   offset_1 = BrickPi.Encoder[motor1]
   offset_2 = BrickPi.Encoder[motor2]
@@ -59,15 +58,23 @@ def fwd_amt(distance):
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
 
+  throttle_index = 0
   print "deg", degrees, no_rotations
-
+  previous_offset = offset_1
   while(BrickPi.Encoder[motor1] - offset_1 < degrees
     and BrickPi.Encoder[motor2] - offset_2 < degrees): # running while loop for no_seconds seconds
     BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
     adjustValues(degrees, offset_1, offset_2)
+    throttle_index += 1
+    delta_distance = (circumference * (BrickPi.Encoder[motor1] - previous_offset) / 720)
+    if delta_distance > 10:
+      particles.update_forward(delta_distance)
+      print "Moved", delta_distance, "cm - updating particle map"
+      previous_offset = BrickPi.Encoder[motor1]
+      particles.draw()
+      throttle_index = 0
+    
     time.sleep(.001)                   	# sleep for 100 ms
-    particle_counter += 1
-    checkToDraw(offset_1)
  
 def adjustValues(degrees, offset_1, offset_2):
   global speed_left, speed_right
@@ -86,6 +93,12 @@ def adjustValues(degrees, offset_1, offset_2):
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
   #print ">> L:", speed_left, "(",(rot1 / degrees * 100),"%) R:", speed_right, "(",(rot2 / degrees * 100),"%)"
+
+def rotate(angle):
+  if(angle < 0):
+    turn(-angle, 'l')
+  else:
+    turn(angle, 'r')
 
 #Turn -- private function
 def turn(deg, orientation):
@@ -119,7 +132,8 @@ def turn(deg, orientation):
   BrickPiUpdateValues()
   #time.sleep(.001)
   #turned = (BrickPi.Encoder[motor1] - offset_1) * WHEELRADIUS / (2 * axle)
-  particles.update_rotate(90)
+  particles.update_rotate(deg)
+  particles.draw()
   while(abs(BrickPi.Encoder[motor1] - offset_1) < degrees
     and abs(BrickPi.Encoder[motor2] - offset_2) < degrees): 
     BrickPiUpdateValues()
@@ -134,6 +148,10 @@ def turnParticleDraw(turned):
     particles.update_rotate(turned)
     particles.draw()
     turn_counter = 0
+
+
+def estimate_location():
+  return particles.estimate_location()
 
 #Stop
 def stop():

@@ -3,7 +3,7 @@ import time
 import particles
 
 for i in range(4):
-  motion.fwd_amt(1000)
+  motion.fwd_amt(50)
   motion.turn(90, "r")
 
 
