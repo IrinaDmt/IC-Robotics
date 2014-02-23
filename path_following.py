@@ -2,7 +2,7 @@
 
 # week 4, q2.2: Path Following !
 
-import motion2, math
+import motion, math
 
 class PathFollower:
   
@@ -15,7 +15,7 @@ class PathFollower:
   def navigateToWaypoint(self, x, y):
     print "Target Location: ", x, y
 
-    (self.x, self.y, self.angle) = motion2.estimate_location()
+    (self.x, self.y, self.angle) = motion.estimate_location()
 
     print "Current Location: ", self.x, self.y
 
@@ -47,13 +47,13 @@ class PathFollower:
     print "Rotation Angle:", rotation_theta
 
     print self.x, self.y, self.angle, rotation_theta, distance
-    motion2.rotate(rotation_theta)
-    motion2.fwd_amt(distance)
-    motion2.stop()
+    motion.rotate(rotation_theta)
+    motion.fwd_amt(distance)
+    motion.stop()
 
   def nnavigateToWaypoint(self, x, y):
     # given current X, Y, theta..
-    (self.x, self.y, self.angle) = motion2.estimate_location()
+    (self.x, self.y, self.angle) = motion.estimate_location()
     print "Current position: (",self.x,",", self.y,",", self.angle,")"
     dx = x - self.x
     dy = y - self.y
@@ -63,15 +63,15 @@ class PathFollower:
     diff_angle = absolute_angle - self.angle
     diff_angle = diff_angle % 360
     print "Rotating", diff_angle
-    motion2.rotate(diff_angle)
-    motion2.fwd_amt(forward_distance)
-    motion2.stop()
+    motion.rotate(diff_angle)
+    motion.fwd_amt(forward_distance)
+    motion.stop()
 
 robby = PathFollower()
-print "A:", motion2.estimate_location()
+print "A:", motion.estimate_location()
 robby.navigateToWaypoint(30, 30)
-print "B:", motion2.estimate_location()
+print "B:", motion.estimate_location()
 robby.navigateToWaypoint(30, -20)
-print "C:", motion2.estimate_location()
+print "C:", motion.estimate_location()
 robby.navigateToWaypoint(0, 0)
-print "D:", motion2.estimate_location()
+print "D:", motion.estimate_location()
