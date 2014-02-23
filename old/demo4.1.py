@@ -4,8 +4,9 @@ import particles
 
 for i in range(4):
   motion.fwd_amt(50)
+  motion.stop()
   motion.turn(90, "r")
-
+  motion.stop()
 
 '''
 particles.initialise()

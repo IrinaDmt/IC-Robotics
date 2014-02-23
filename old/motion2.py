@@ -10,8 +10,9 @@
 # This code is for testing the BrickPi with a Lego Motor
 
 from BrickPi import *   #import BrickPi.py file to use BrickPi operations
-import math, sys, particles
+import math, sys, particles2 
 
+particles = particles2
 WHEELRADIUS = 2.2
 circumference = 2 * math.pi * WHEELRADIUS
 

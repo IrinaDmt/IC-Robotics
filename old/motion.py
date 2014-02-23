@@ -69,17 +69,12 @@ def fwd_amt(distance):
     delta_distance = (circumference * (BrickPi.Encoder[motor1] - previous_offset) / 720)
     if delta_distance > 10:
       particles.update_forward(delta_distance)
-      #print "Moved", delta_distance, "cm - updating particle map"
+      print "Moved", delta_distance, "cm - updating particle map"
       previous_offset = BrickPi.Encoder[motor1]
       particles.draw()
       throttle_index = 0
     
     time.sleep(.001)                   	# sleep for 100 ms
-  #needs to update last bit of movement, else particles will be off by up to 10 units
-  BrickPiUpdateValues()
-  delta_distance = (circumference * (BrickPi.Encoder[motor1] - previous_offset) / 720)
-  particles.update_forward(delta_distance)
-  particles.draw()
  
 def adjustValues(degrees, offset_1, offset_2):
   global speed_left, speed_right
@@ -137,11 +132,7 @@ def turn(deg, orientation):
   BrickPiUpdateValues()
   #time.sleep(.001)
   #turned = (BrickPi.Encoder[motor1] - offset_1) * WHEELRADIUS / (2 * axle)
-  if orientation == 'l':
-    particles.update_rotate(-deg)
-    print "Updating negative direction: ", -deg
-  elif orientation == 'r':
-    particles.update_rotate(deg)
+  particles.update_rotate(deg)
   particles.draw()
   while(abs(BrickPi.Encoder[motor1] - offset_1) < degrees
     and abs(BrickPi.Encoder[motor2] - offset_2) < degrees): 
