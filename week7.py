@@ -14,7 +14,7 @@ for i in xrange(100):
 sonar = 210
 
 for (i, p) in enumerate(particlesList):
-    print "Particle", i, ":"
-    print particles_addition.calculate_likelihood(p.x, p.y, p.theta, sonar)
-    print "x:", p.x, "y:", p.y
+    print "Particle", i, ":", "(",p.x,",", p.y,")"
+    l = particles_addition.calculate_likelihood(p.x, p.y, p.theta, sonar)
+    print 'likelihood=', l
     print

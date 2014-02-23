@@ -11,7 +11,7 @@ def calculate_likelihood(x, y, theta, z):
   #decide wall & distance
   lowestDistance = sys.maxsize
   closestWall = odometry.walls[0]
-  erer = -1
+  erer = '?'
 
   for (i, wall) in enumerate(odometry.walls):
         
@@ -19,10 +19,11 @@ def calculate_likelihood(x, y, theta, z):
     if wall.validIntersectionExistsFrom(x, y, theta) and wall.distanceFrom(x, y, theta) < lowestDistance:
       closestWall = wall
       lowestDistance = wall.distanceFrom(x, y, theta)
-      erer = i
-  if erer != 6:
-    print "oh noooooooooooOO"
-  #actual likelihood calculation
+      erer = chr(ord('a') + i)
+  
+  print "Facing wall", erer
+
+  # Actual likelihood calculation
   m = closestWall.distanceFrom(x, y, theta)
   return math.exp((-(z - m)**2) / (2 * sonar_sigma**2)) + robustness_constant
 

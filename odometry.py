@@ -27,20 +27,23 @@ class Wall:
   def distanceFrom(self, x, y, theta):
     numerator   = self.Ydiff * (self.x1 - x) - self.Xdiff * (self.y1 - y)
     denominator = self.Ydiff * math.cos(math.radians(theta)) - self.Xdiff * math.sin(math.radians(theta))
+    
     if denominator == 0:
+        # Robot's direction vector and the wall do not intersect
         return sys.maxsize
+    
     return numerator / denominator
 
   def validIntersectionExistsFrom(self, x, y, theta):
     m = self.distanceFrom(x, y, theta)
+    
     if m == sys.maxsize or m <= 0:
-        #print "not valid"
-        return False
+        # If no intersection exists (infinte distance, lines are perpendicular)
+	# or if the intersection is behind the robot
+	return False
+    
     intersectX = x + m * math.cos(math.radians(theta))
     intersectY = y + m * math.sin(math.radians(theta))
-    #print "dist>", m
-    #print "valid intersection", intersectX, intersectY
-    print intersectX >= self.minX and intersectX <= self.maxX and intersectY >= self.minY and intersectY <= self.maxY 
     return intersectX >= self.minX and intersectX <= self.maxX and intersectY >= self.minY and intersectY <= self.maxY 
 
   def incidenceAngleFrom(self, x, y, theta):
