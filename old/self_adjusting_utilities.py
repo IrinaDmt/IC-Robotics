@@ -30,6 +30,42 @@ BrickPi.Encoder[motor2] = 0
 
 BrickPiSetupSensors()   #Send the properties of sensors to BrickPi
 
+#Set speed to custom value
+def set_speeds(l, r):
+  global speed_left, speed_right, motor1, motor2
+  speed_left = l
+  speed_right = r
+  BrickPi.MotorSpeed[motor1] = speed_left
+  BrickPi.MotorSpeed[motor2] = speed_right
+  BrickPiUpdateValues()
+
+def get_speeds():
+  global motor1, motor2
+  BrickPiUpdateValues()
+  return BrickPi.MotorSpeed[motor1], BrickPi.MotorSpeed[motor2]
+
+def inc_speed(val):
+  global speed_left, speed_right
+  speed_left = speed_left +  val
+  speed_right = speed_right + val
+  BrickPi.MotorSpeed[motor1] = speed_left
+  BrickPi.MotorSpeed[motor2] = speed_right
+  BrickPiUpdateValues()
+
+def dec_speed(val):
+  global speed_left, speed_right
+  speed_left = speed_left -  val
+  speed_right = speed_right - val
+  BrickPi.MotorSpeed[motor1] = speed_left
+  BrickPi.MotorSpeed[motor2] = speed_right
+  BrickPiUpdateValues()
+
+def fwd_simple():
+  BrickPi.MotorSpeed[motor1] = 100
+  BrickPi.MotorSpeed[motor2] = 102
+  BrickPiUpdateValues()
+  time.sleep(0.2)
+
 #Move Forward
 def fwd(distance):
   global WHEELRADIUS, speed_left, speed_right
@@ -39,12 +75,10 @@ def fwd(distance):
   speed_left = 200
   speed_right = 204
   circumference = 2 * math.pi * WHEELRADIUS
-  print "- Going forward ", distance, " cm"
   no_rotations = distance / circumference
   degrees  = no_rotations * 720
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print "deg", degrees, no_rotations
   while(BrickPi.Encoder[motor1] - offset_1 < degrees
     and BrickPi.Encoder[motor2] - offset_2 < degrees): # running while loop for no_seconds seconds
     BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
@@ -67,7 +101,8 @@ def adjustValues(degrees, offset_1, offset_2):
     speed_right = target_speed + diff * k
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print ">> L:", speed_left, "(",(rot1 / degrees * 100),"%) R:", speed_right, "(",(rot2 / degrees * 100),"%)"
+  print ">> L:", speed_left, "(",(rot1 / degrees * 100),"%) R:", speed_right, "    (",(rot2 / degrees * 100),"%)"
+
 
 #Move backward
 def back(distance):
@@ -83,7 +118,6 @@ def back(distance):
   degrees  = no_rotations * 720
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print "deg", degrees, no_rotations
   while(offset_1 - BrickPi.Encoder[motor1] < degrees
     and offset_2 - BrickPi.Encoder[motor2] < degrees): 
     BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
@@ -106,11 +140,9 @@ def adjustValuesBack(degrees, offset_1, offset_2):
     speed_right = target_speed + diff * k
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print ">> L:", speed_left, "(",(spins1 / degrees * 100),"%) R:", speed_right, "(",(spins2 / degrees * 100),"%)"
 
 #Stop
 def stop():
-  print "- Stopping"
   BrickPi.MotorSpeed[motor1] = 0
   BrickPi.MotorSpeed[motor2] = 0
   BrickPiUpdateValues()
@@ -144,7 +176,6 @@ def turn(deg, orientation):
   #Start turning 
   BrickPi.MotorSpeed[motor1] = speed_left
   BrickPi.MotorSpeed[motor2] = speed_right
-  print "deg", degrees, no_rotations
  
   while(abs(BrickPi.Encoder[motor1] - offset_1) < degrees
     and abs(BrickPi.Encoder[motor2] - offset_2) < degrees): 
@@ -166,45 +197,3 @@ def right(deg):
 #90 degrees Right
 def right90deg():
   right(90)
-
-#Controller output
-input = raw_input(">")
-while (input != ""):
-  if input == "s":
-    dist = raw_input("distance in cm>")
-    if dist == "":
-      dist = 20 
-    back(float(dist))
-    stop()
-  elif input == "w":
-    dist = raw_input("distance in cm>")
-    if dist == "":
-      dist = 20
-    fwd(float(dist))
-    stop()
-  elif input == "a":
-    angle = raw_input("angle>")
-    left(float(angle))
-    stop()
-  elif input == "d":
-    angle = raw_input("angle>")
-    right(float(angle))
-    stop()
-  elif input == "square" or input == "sq":
-    size = raw_input("size>")
-    if size == "":
-      size = 15
-    for i in range(4):
-      fwd(float(size))
-      stop()
-      left90deg()
-      stop()
-  elif input == "stop" or input == "exit":
-    break
-  elif input == "left":
-    left90deg()
-    stop()
-  elif input == "right":
-    right90deg()
-    stop()
-  input = raw_input(">")
