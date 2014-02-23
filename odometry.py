@@ -34,21 +34,19 @@ class Wall:
   def validIntersectionExistsFrom(self, x, y, theta):
     m = self.distanceFrom(x, y, theta)
     if m == sys.maxsize or m <= 0:
-        print "not valid"
+        #print "not valid"
         return False
     intersectX = x + m * math.cos(math.radians(theta))
     intersectY = y + m * math.sin(math.radians(theta))
-    print "dist>", m
-    print "valid intersection", intersectX, intersectY
+    #print "dist>", m
+    #print "valid intersection", intersectX, intersectY
     print intersectX >= self.minX and intersectX <= self.maxX and intersectY >= self.minY and intersectY <= self.maxY 
     return intersectX >= self.minX and intersectX <= self.maxX and intersectY >= self.minY and intersectY <= self.maxY 
 
   def incidenceAngleFrom(self, x, y, theta):
     inverseYdiff = self.y1 - self.y2
     numerator   = math.cos(math.radians(theta)) * inverseYdiff + math.sin(math.radians(theta)) * Xdiff
-
     denominator = math.sqrt(inverseYdiff**2 + Xdiff**2)
-    
     return math.degrees(math.acos(numerator/denominator))
     
 

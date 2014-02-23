@@ -15,15 +15,13 @@ def calculate_likelihood(x, y, theta, z):
 
   for (i, wall) in enumerate(odometry.walls):
         
-    print "curr wall", wall.x1, wall.y1, wall.x2, wall.y2, "wall number", i
+    #print "curr wall", wall.x1, wall.y1, wall.x2, wall.y2, "wall number", i
     if wall.validIntersectionExistsFrom(x, y, theta) and wall.distanceFrom(x, y, theta) < lowestDistance:
       closestWall = wall
       lowestDistance = wall.distanceFrom(x, y, theta)
       erer = i
-    print
-    print
-
-  print "Chosen Wall: ", erer
+  if erer != 6:
+    print "oh noooooooooooOO"
   #actual likelihood calculation
   m = closestWall.distanceFrom(x, y, theta)
   return math.exp((-(z - m)**2) / (2 * sonar_sigma**2)) + robustness_constant
