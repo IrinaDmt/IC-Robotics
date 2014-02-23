@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import particles
 import particles_addition
 import random
