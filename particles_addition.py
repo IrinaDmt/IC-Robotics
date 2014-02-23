@@ -1,6 +1,6 @@
 import odometry
 import random
-import math
+import math, sys
 
 robustness_constant = 0.05 #(5% chance of random sonar values)
 sonar_sigma = 1
@@ -9,17 +9,19 @@ sonar_sigma = 1
 
 def calculate_likelihood(x, y, theta, z):
   #decide wall & distance
-  lowestDistance = 999999999999999
+  lowestDistance = sys.maxsize
   closestWall = odometry.walls[0]
   erer = -1
 
   for (i, wall) in enumerate(odometry.walls):
         
-    print "curr wall", wall.minX, wall.minY
+    print "curr wall", wall.x1, wall.y1, wall.x2, wall.y2, "wall number", i
     if wall.validIntersectionExistsFrom(x, y, theta) and wall.distanceFrom(x, y, theta) < lowestDistance:
       closestWall = wall
       lowestDistance = wall.distanceFrom(x, y, theta)
       erer = i
+    print
+    print
 
   print "Chosen Wall: ", erer
   #actual likelihood calculation
