@@ -21,7 +21,7 @@ def calculate_likelihood(x, y, theta, z):
       lowestDistance = wall.distanceFrom(x, y, theta)
       erer = chr(ord('a') + i)
   
-  print "Facing wall", erer
+  #print "Facing wall", erer
 
   # Actual likelihood calculation
   m = closestWall.distanceFrom(x, y, theta)
