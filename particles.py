@@ -4,10 +4,10 @@ import random, sys, math
 NUMBER_OF_PARTICLES = 100
 mu = 0
 #below are standard deviations
-sigma = 0.4 #straight line deviation 
+sigma = 0.2 #straight line deviation 
 # (average distance between how far our robot travelled and how far we wanted it to travel)
-rotation_sigma = 1 #rotation deviation (in angles)
-motor_sigma = 0.5 #angular deviation of our robot whilst driving in a straight line
+rotation_sigma = 0 #rotation deviation (in angles)
+motor_sigma = 0.4 #angular deviation of our robot whilst driving in a straight line
 #the above could be caused by one motor accidentally going slightly faster than another
 
 robustness_constant = 0.05 #(5% chance of random sonar values)
@@ -32,10 +32,13 @@ class Canvas:
     y2 = self.__screenY(line[3]);
     print "drawLine:" + str((x1,y1,x2,y2))
 
-  def drawParticles(self,data):
+  def drawParticles(self,data=None):
+    if data is None:
+      data = particle_list
+
     particle_tuples = []
-    for p in particle_list:
-      particle_tuples.append( (p.x, p.y, p.theta) )
+    for p in data:
+      particle_tuples.append( (self.__screenX(p.x), self.__screenY(p.y), p.theta) )
     print "drawParticles:" + str(particle_tuples)
 
   def __screenX(self,x):
@@ -136,10 +139,7 @@ def initialise():
 #e.g. change Particle(0,0,0,0) to Particle(100, 500, 0, 0) for origin at (100, 500)
 
 def draw():
-  particle_tuples = []
-  for p in particle_list:
-    particle_tuples.append( (p.x, p.y, p.theta) )
-  print "drawParticles:" + str(particle_tuples)
+  canvas.drawParticles(particle_list)
 
 def update_forward(distance):
   print "Updating forward ", distance
@@ -207,7 +207,9 @@ def resample():
   #overwrite list
   particle_list = new_particles
 
+
 def update_probability(sonar_distance):
   for p in particle_list:
     p.calculate_likelihood(sonar_distance)
   resample()
+

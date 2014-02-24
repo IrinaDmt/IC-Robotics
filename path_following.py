@@ -51,27 +51,17 @@ class PathFollower:
     motion.fwd_amt(distance)
     motion.stop()
 
-  def nnavigateToWaypoint(self, x, y):
-    # given current X, Y, theta..
-    (self.x, self.y, self.angle) = motion.estimate_location()
-    print "Current position: (",self.x,",", self.y,",", self.angle,")"
-    dx = x - self.x
-    dy = y - self.y
-    forward_distance = math.sqrt(math.pow(dx,2) + math.pow(dy,2))
-    absolute_angle = math.degrees(math.atan(dx / dy))
-    print dx, dy, ">", forward_distance, absolute_angle
-    diff_angle = absolute_angle - self.angle
-    diff_angle = diff_angle % 360
-    print "Rotating", diff_angle
-    motion.rotate(diff_angle)
-    motion.fwd_amt(forward_distance)
-    motion.stop()
-
-robby = PathFollower()
-print "A:", motion.estimate_location()
-robby.navigateToWaypoint(30, 30)
-print "B:", motion.estimate_location()
-robby.navigateToWaypoint(30, -20)
-print "C:", motion.estimate_location()
-robby.navigateToWaypoint(0, 0)
-print "D:", motion.estimate_location()
+gb = PathFollower()
+waypoints = [
+  (84, 30), 
+  (180, 30)#, 
+#  (180, 54), 
+#  (126, 54), 
+#  (126, 168), 
+#  (126, 126), 
+#  (30, 54), 
+#  (84, 54), 
+#  (84, 30)
+]
+for (x, y) in waypoints:
+  gb.navigateToWaypoint(x, y)
