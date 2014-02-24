@@ -1,7 +1,7 @@
 import odometry
 import random, sys, math
 
-NUMBER_OF_PARTICLES = 100
+NUMBER_OF_PARTICLES = 5
 mu = 0
 #below are standard deviations
 sigma = 0.2 #straight line deviation 
@@ -20,7 +20,8 @@ particle_list = []
 #      the map frame of reference (in cm) and the display (in pixels)
 class Canvas:
   def __init__(self,map_size=210):
-    self.map_size    = map_size;    # in cm;
+    self.map_size    = map_size;  
+      # in cm;
     self.canvas_size = 768;         # in pixels;
     self.margin      = 0.05*map_size;
     self.scale       = self.canvas_size/(map_size+2*self.margin);
@@ -30,7 +31,7 @@ class Canvas:
     y1 = self.__screenY(line[1]);
     x2 = self.__screenX(line[2]);
     y2 = self.__screenY(line[3]);
-    print "drawLine:" + str((x1,y1,x2,y2))
+    #print "drawLine:" + str((x1,y1,x2,y2))
 
   def drawParticles(self,data=None):
     if data is None:
@@ -123,13 +124,14 @@ class Particle:
         lowestDistance = wall.distanceFrom(x, y, theta)
         erer = chr(ord('a') + i)
     
-    print "Facing wall", erer
+    #print "Facing wall", erer
 
     # Actual likelihood calculation
     m = closestWall.distanceFrom(x, y, theta)
     return math.exp((-(z - m)**2) / (2 * sonar_sigma**2)) + robustness_constant
+
   def update_weight(self, z):
-    self.weight = self.calculate_likelihood(z)
+    self.weight *= self.calculate_likelihood(z)
 
 #import these using "import particles",
 # then call using namespace identifier, e.g. particles.initialise()
@@ -174,9 +176,9 @@ def normalise():
 
   for p in particle_list:
     p.weight /= probability_sum
-
+    
 def resample():
-  global particle_list
+  global particle_list, NUMBER_OF_PARTICLES
 
   normalise()
 
@@ -197,7 +199,7 @@ def resample():
     for c in cumul_prob_list:
       if r < c[1] and r >= c[0]: #c[0] = lower bound for this particle, c[1] = upper bound
         new_particles.append(
-          Particle(c[2].x, c[2].y, c[2].theta, 1/NUMBER_OF_PARTICLES)
+          Particle(c[2].x, c[2].y, c[2].theta, 1.0/NUMBER_OF_PARTICLES)
         ) # c[2] = old particle
         break
     else: # else belonging to for loop - check python documentation if confused
@@ -212,4 +214,34 @@ def update_probability(sonar_distance):
   for p in particle_list:
     p.calculate_likelihood(sonar_distance)
   resample()
+  
+def demo_resampling_and_normalising():
+  global particle_list
+  sample_size = NUMBER_OF_PARTICLES
+  sonar = 168
+  particle_list = []
+  for i in xrange(sample_size):
+    particle_list.append(Particle(random.randint(0,3), random.randint(0,3), 90, 0.01))
+    particle_list[i].update_weight(sonar)
+    print "Particle coordinates are :", particle_list[i].x, particle_list[i].y
+    print "New weight is", particle_list[i].weight
 
+  print
+  print "##### normalising"
+  print 
+
+  normalise()
+  for i in xrange(sample_size):
+    print "Particle coordinates are :", particle_list[i].x, particle_list[i].y
+    print "New weight is", particle_list[i].weight
+
+  print
+  print "##### resampling"
+  print
+
+  resample()
+  for i in xrange(sample_size):
+    print "Particle coordinates are :", particle_list[i].x, particle_list[i].y
+    print "New weight is", particle_list[i].weight
+  particle_list = []
+    
