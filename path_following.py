@@ -13,12 +13,11 @@ class PathFollower:
     self.angle = startAngle
 
   def navigateToWaypoint(self, x, y):
-    print "Target Location: ", x, y
+    global negative_particles, positive_particles
 
     (self.x, self.y, self.angle) = motion.estimate_location()
 
-    print "Current Location: ", self.x, self.y
-
+    print "Navigating from (",self.x,", ",self.y,") -> (",x,", ",y,")"
     dx = x - self.x
     dy = y - self.y
     distance = math.sqrt(dx**2 + dy**2)
@@ -28,13 +27,17 @@ class PathFollower:
 
     target_theta = 0
     if dx > 0 and dy > 0:
-      target_theta = 360 - theta_portion
-    elif dx > 0 and dy < 0:
+      #target_theta = 360 - theta_portion
       target_theta = theta_portion
+    elif dx > 0 and dy < 0:
+      #target_theta = theta_portion
+      target_theta = 360 - theta_portion
     elif dx < 0 and dy > 0:
-      target_theta = 180 + theta_portion
-    elif dx < 0 and dy < 0:
+      #target_theta = 180 + theta_portion
       target_theta = 180 - theta_portion
+    elif dx < 0 and dy < 0:
+      #target_theta = 180 - theta_portion
+      target_theta = 180 + theta_portion
 
     print "Target Angle:", target_theta
     
@@ -46,22 +49,22 @@ class PathFollower:
 
     print "Rotation Angle:", rotation_theta
 
-    print self.x, self.y, self.angle, rotation_theta, distance
     motion.rotate(rotation_theta)
     motion.fwd_amt(distance)
     motion.stop()
 
 gb = PathFollower()
 waypoints = [
-  (84, 30), 
-  (180, 30)#, 
-#  (180, 54), 
-#  (126, 54), 
-#  (126, 168), 
-#  (126, 126), 
-#  (30, 54), 
-#  (84, 54), 
-#  (84, 30)
+  (84, 30),
+  (180, 30),
+  (180, 54),
+  (126, 54),
+  (126, 168),
+  (126, 126),
+  (30, 54),
+  (84, 54),
+  (84, 30)
 ]
-for (x, y) in waypoints:
+
+for (x, y) in waypoints[1:]:
   gb.navigateToWaypoint(x, y)

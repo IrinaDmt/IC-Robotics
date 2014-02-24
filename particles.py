@@ -74,14 +74,8 @@ mymap = Map();
 # f: F to G
 # g: G to H
 # h: H to O
-mymap.add_wall((0,0,0,168))        # a
-mymap.add_wall((0,168,84,168))     # b
-mymap.add_wall((84,126,84,210))    # c
-mymap.add_wall((84,210,168,210))   # d
-mymap.add_wall((168,210,168,84))   # e
-mymap.add_wall((168,84,210,84))    # f
-mymap.add_wall((210,84,210,0))     # g
-mymap.add_wall((210,0,0,0))        # h
+for wall in odometry.walls:
+  mymap.add_wall((wall.x1, wall.y1, wall.x2, wall.y2))
 mymap.draw()
 
 class Particle:
@@ -94,16 +88,17 @@ class Particle:
     self.f = random.gauss(mu, motor_sigma)
     self.g = random.gauss(mu, rotation_sigma)
   def update_forward(self, distance):
+    self.e = random.gauss(mu, sigma)
+    self.f = random.gauss(mu, motor_sigma)
+
     theta_radians = math.radians(self.theta)
     self.x += (distance + self.e)*math.cos(theta_radians)
-    self.y += (distance + self.e)*(-math.sin(theta_radians)) #due to clockwise degrees
+    self.y += (distance + self.e)*(math.sin(theta_radians)) #due to clockwise degrees
     self.theta = self.theta + self.f
   def update_rotation(self, angle):
+    self.g = random.gauss(mu, rotation_sigma)
     temp_theta = self.theta + angle + self.g
-    if temp_theta < 0:
-      self.theta = temp_theta + 360
-    elif temp_theta > 360:
-      self.theta = temp_theta - 360
+    self.theta = temp_theta % 360
   def state_tuple(self):
     return self.x, self.y, self.theta
   def calculate_likelihood(self, z):
@@ -136,34 +131,34 @@ class Particle:
 # then call using namespace identifier, e.g. particles.initialise()
 def initialise():
   for i in range(NUMBER_OF_PARTICLES):
-    particle_list.append(Particle(0, 0, 0, 1.0 / NUMBER_OF_PARTICLES)) #change this if you want to change the origin
+    particle_list.append(Particle(84, 30, 0, 1.0 / NUMBER_OF_PARTICLES)) #change this if you want to change the origin
 #e.g. change Particle(0,0,0,0) to Particle(100, 500, 0, 0) for origin at (100, 500)
 
 def draw():
   canvas.drawParticles(particle_list)
 
 def update_forward(distance):
-  print "Updating forward ", distance
   for p in particle_list:
     p.update_forward(distance)
-
-  # read from the sonar and update the particles' weights
-  # update_probability(sonar_reading)
 
 def update_rotate(angle):
   for p in particle_list:
     p.update_rotation(angle)
-  # read from the sonar and update the particles' weights
-  # update_probability(sonar_reading)
 
 def estimate_location():
   x = 0
   y = 0
-  theta = 0
+  angle_x = 0
+  angle_y = 0
   for p in particle_list:
     x     += p.x * p.weight
     y     += p.y * p.weight
-    theta += p.theta * p.weight
+
+    # Create a vector which represents the average angle
+    angle_x += math.cos(math.radians(p.theta)) * p.weight
+    angle_y += math.sin(math.radians(p.theta)) * p.weight
+    #theta += p.theta * p.weight
+  theta = math.degrees(math.atan2(angle_y, angle_x))
   return x, y, theta
 
 def normalise():

@@ -19,6 +19,7 @@ BrickPiSetup()  # setup the serial port for communication
 
 motor1 = PORT_A
 motor2 = PORT_B
+SONAR_PORT = PORT_1
 speed_left = 0 
 speed_right = 0
 no_seconds_forward = 0.8775 # 30 cm
@@ -33,8 +34,13 @@ BrickPi.MotorEnable[motor2] = 1 #Enable the Motor B
 BrickPi.Encoder[motor1] = 0
 BrickPi.Encoder[motor2] = 0
 
+BrickPi.SensorType[SONAR_PORT] = TYPE_SENSOR_ULTRASONIC_CONT
+
 BrickPiSetupSensors()   #Send the properties of sensors to BrickPi
 particles.initialise()
+
+def get_sonar_distance():
+  return BrickPi.Sensor[SONAR_PORT]
 
 def checkToDraw(offset):
   global particle_counter, circumference
@@ -42,6 +48,7 @@ def checkToDraw(offset):
   if particle_counter >= 250:
     distance = circumference * (BrickPi.Encoder[motor1] - offset) / 720
     particles.update_forward(distance)
+    particles.update_probability(get_sonar_distance())
     particles.draw()
     particle_counter = 0
 
@@ -59,26 +66,27 @@ def fwd_amt(distance):
   BrickPi.MotorSpeed[motor2] = speed_right
 
   throttle_index = 0
-  print "deg", degrees, no_rotations
   previous_offset = offset_1
   while(BrickPi.Encoder[motor1] - offset_1 < degrees
     and BrickPi.Encoder[motor2] - offset_2 < degrees): # running while loop for no_seconds seconds
-    BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
+    BrickPiUpdateValues()                # Ask BrickPi to update values for sensors/motors
     adjustValues(degrees, offset_1, offset_2)
     throttle_index += 1
     delta_distance = (circumference * (BrickPi.Encoder[motor1] - previous_offset) / 720)
     if delta_distance > 10:
       particles.update_forward(delta_distance)
+      particles.update_probability(get_sonar_distance())
       #print "Moved", delta_distance, "cm - updating particle map"
       previous_offset = BrickPi.Encoder[motor1]
       particles.draw()
       throttle_index = 0
     
-    time.sleep(.001)                   	# sleep for 100 ms
+    time.sleep(.001)                       # sleep for 100 ms
   #needs to update last bit of movement, else particles will be off by up to 10 units
   BrickPiUpdateValues()
   delta_distance = (circumference * (BrickPi.Encoder[motor1] - previous_offset) / 720)
   particles.update_forward(delta_distance)
+  particles.update_probability(get_sonar_distance())
   particles.draw()
  
 def adjustValues(degrees, offset_1, offset_2):
@@ -100,14 +108,19 @@ def adjustValues(degrees, offset_1, offset_2):
   #print ">> L:", speed_left, "(",(rot1 / degrees * 100),"%) R:", speed_right, "(",(rot2 / degrees * 100),"%)"
 
 def rotate(angle):
-  if(angle < 0):
-    turn(-angle, 'l')
+  if(angle >= 0):
+    turn(angle, 'l')
   else:
-    turn(angle, 'r')
+    turn(-angle, 'r')
 
 #Turn -- private function
 def turn(deg, orientation):
   global WHEELRADIUS, speed_left, speed_right, turn_counter
+  
+  if deg < 1:
+    # Angle is sufficiently small to just ignore. :)
+    return
+
   turn_counter = 0
   #Adjust initial speeds
   if (orientation == "l"):
@@ -138,10 +151,10 @@ def turn(deg, orientation):
   #time.sleep(.001)
   #turned = (BrickPi.Encoder[motor1] - offset_1) * WHEELRADIUS / (2 * axle)
   if orientation == 'l':
-    particles.update_rotate(-deg)
-    print "Updating negative direction: ", -deg
-  elif orientation == 'r':
     particles.update_rotate(deg)
+  else:
+    particles.update_rotate(-deg)
+  particles.update_probability(get_sonar_distance())
   particles.draw()
   while(abs(BrickPi.Encoder[motor1] - offset_1) < degrees
     and abs(BrickPi.Encoder[motor2] - offset_2) < degrees): 
@@ -155,6 +168,7 @@ def turnParticleDraw(turned):
   turn_counter += 1
   if turn_counter >= 250:
     particles.update_rotate(turned)
+    particles.update_probability(get_sonar_distance())
     particles.draw()
     turn_counter = 0
 
@@ -174,8 +188,8 @@ def stop():
 def timer(no_seconds):
   ot = time.time()
   while(time.time() - ot < no_seconds): # running while loop for no_seconds seconds
-    BrickPiUpdateValues()            	# Ask BrickPi to update values for sensors/motors
-    time.sleep(.01)                   	# sleep for 100 ms
+    BrickPiUpdateValues()                # Ask BrickPi to update values for sensors/motors
+    time.sleep(.01)                       # sleep for 100 ms
 '''
 for i in range(1):
   input = raw_input(">")
