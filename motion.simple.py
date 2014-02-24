@@ -73,24 +73,23 @@ def fwd_amt(distance):
     adjustValues(degrees, offset_1, offset_2)
     throttle_index += 1
     delta_distance = (circumference * (BrickPi.Encoder[motor1] - previous_offset) / 720)
-    if delta_distance > 10:
-      #particles.update_forward(delta_distance)
-      #particles.update_probability(get_sonar_distance())
+    if delta_distance > 20:
+      stop()
+      time.sleep(0.02)
+      particles.update_forward(delta_distance)
+      particles.update_probability(get_sonar_distance())
       #print "Moved", delta_distance, "cm - updating particle map"
       previous_offset = BrickPi.Encoder[motor1]
-      #particles.draw()
+      particles.draw()
       throttle_index = 0
-
-      # HACK!!! we are going to repeatedly call navigateToWaypoint() in path_following,py
-      #return
     
     time.sleep(.001)                       # sleep for 100 ms
   #needs to update last bit of movement, else particles will be off by up to 10 units
   BrickPiUpdateValues()
   delta_distance = (circumference * (BrickPi.Encoder[motor1] - previous_offset) / 720)
-  #particles.update_forward(delta_distance)
-  #particles.update_probability(get_sonar_distance())
-  #particles.draw()
+  particles.update_forward(delta_distance)
+  particles.update_probability(get_sonar_distance())
+  particles.draw()
  
 def adjustValues(degrees, offset_1, offset_2):
   global speed_left, speed_right
@@ -178,50 +177,6 @@ def turnParticleDraw(turned):
 
 def estimate_location():
   return particles.estimate_location()
-
-def navigateToWaypoint(x, y):
-  (currentX, currentY, currentAngle) = particles.estimate_location()
-
-  print "Navigating from (",currentX,", ",currentY,") -> (",x,", ",y,")"
-  dx = x - currentX
-  dy = y - currentY
-  distance = math.sqrt(dx**2 + dy**2)
-  theta_portion = math.fabs(math.degrees(math.atan(dy / dx)))
-
-  print "Current Angle: ", currentAngle
-
-  target_theta = 0
-  if dx > 0 and dy > 0:
-    #target_theta = 360 - theta_portion
-    target_theta = theta_portion
-  elif dx > 0 and dy < 0:
-    #target_theta = theta_portion
-    target_theta = 360 - theta_portion
-  elif dx < 0 and dy > 0:
-    #target_theta = 180 + theta_portion
-    target_theta = 180 - theta_portion
-  elif dx < 0 and dy < 0:
-    #target_theta = 180 - theta_portion
-    target_theta = 180 + theta_portion
-
-  print "Target Angle:", target_theta
-    
-  rotation_theta = target_theta - currentAngle
-  if rotation_theta > 180:
-    rotation_theta = rotation_theta - 360
-  elif rotation_theta < -180:
-    rotation_theta = rotation_theta + 360
-  
-  print "Rotation Angle:", rotation_theta
-
-  rotate(rotation_theta)
-  forward_amount = min(distance, 20)
-  fwd_amt(forward_amount)
-  stop()
-  time.sleep(0.05)
-  particles.update_forward(forward_amount)
-  particles.update_probability(get_sonar_distance())
-  particles.draw()
 
 #Stop
 def stop():
