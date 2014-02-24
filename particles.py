@@ -1,7 +1,7 @@
 import odometry
 import random, sys, math
 
-NUMBER_OF_PARTICLES = 5
+NUMBER_OF_PARTICLES = 100
 mu = 0
 #below are standard deviations
 sigma = 0.2 #straight line deviation 
@@ -20,8 +20,7 @@ particle_list = []
 #      the map frame of reference (in cm) and the display (in pixels)
 class Canvas:
   def __init__(self,map_size=210):
-    self.map_size    = map_size;  
-      # in cm;
+    self.map_size    = map_size;    # in cm;
     self.canvas_size = 768;         # in pixels;
     self.margin      = 0.05*map_size;
     self.scale       = self.canvas_size/(map_size+2*self.margin);
@@ -31,7 +30,7 @@ class Canvas:
     y1 = self.__screenY(line[1]);
     x2 = self.__screenX(line[2]);
     y2 = self.__screenY(line[3]);
-    #print "drawLine:" + str((x1,y1,x2,y2))
+    print "drawLine:" + str((x1,y1,x2,y2))
 
   def drawParticles(self,data=None):
     if data is None:
@@ -75,15 +74,15 @@ mymap = Map();
 # f: F to G
 # g: G to H
 # h: H to O
-mymap.add_wall((0,0,0,168));        # a
-mymap.add_wall((0,168,84,168));     # b
-mymap.add_wall((84,126,84,210));    # c
-mymap.add_wall((84,210,168,210));   # d
-mymap.add_wall((168,210,168,84));   # e
-mymap.add_wall((168,84,210,84));    # f
-mymap.add_wall((210,84,210,0));     # g
-mymap.add_wall((210,0,0,0));        # h
-mymap.draw();
+mymap.add_wall((0,0,0,168))        # a
+mymap.add_wall((0,168,84,168))     # b
+mymap.add_wall((84,126,84,210))    # c
+mymap.add_wall((84,210,168,210))   # d
+mymap.add_wall((168,210,168,84))   # e
+mymap.add_wall((168,84,210,84))    # f
+mymap.add_wall((210,84,210,0))     # g
+mymap.add_wall((210,0,0,0))        # h
+mymap.draw()
 
 class Particle:
   def __init__(self, x, y, theta, weight):
