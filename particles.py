@@ -4,14 +4,14 @@ import random, sys, math
 NUMBER_OF_PARTICLES = 100
 mu = 0
 #below are standard deviations
-sigma = 0.3 #straight line deviation 
+sigma = 0.5 #straight line deviation 
 # (average distance between how far our robot travelled and how far we wanted it to travel)
 rotation_sigma = 1 #rotation deviation (in angles)
-motor_sigma = 0.2 #angular deviation of our robot whilst driving in a straight line
+motor_sigma = 0.4 #angular deviation of our robot whilst driving in a straight line
 #the above could be caused by one motor accidentally going slightly faster than another
 
 robustness_constant = 0.05 #(5% chance of random sonar values)
-sonar_sigma = 1 # 
+sonar_sigma = 3 # 
 
 particle_list = []
 

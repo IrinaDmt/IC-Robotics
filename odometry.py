@@ -29,8 +29,8 @@ class Wall:
     denominator = self.Ydiff * math.cos(math.radians(theta)) - self.Xdiff * math.sin(math.radians(theta))
     
     if denominator == 0:
-        # Robot's direction vector and the wall do not intersect
-        return sys.maxsize
+      # Robot's direction vector and the wall do not intersect
+      return sys.maxsize
     
     return numerator / denominator
 
@@ -38,9 +38,9 @@ class Wall:
     m = self.distanceFrom(x, y, theta)
     
     if m == sys.maxsize or m <= 0:
-        # If no intersection exists (infinte distance, lines are perpendicular)
-	# or if the intersection is behind the robot
-	return False
+      # If no intersection exists (infinte distance, lines are perpendicular)
+      # or if the intersection is behind the robot
+      return False
     
     intersectX = x + m * math.cos(math.radians(theta))
     intersectY = y + m * math.sin(math.radians(theta))
