@@ -136,7 +136,7 @@ def turn(deg, orientation):
     raise Exception("undefined orientation")
 
   #Establish number of spins
-  axle = 7.9
+  axle = 7
   distance = axle * 2 * math.pi * deg / 360 
   circumference = 2 * math.pi * WHEELRADIUS
   no_rotations = distance / circumference
@@ -153,17 +153,11 @@ def turn(deg, orientation):
   BrickPiUpdateValues()
   #time.sleep(.001)
   #turned = (BrickPi.Encoder[motor1] - offset_1) * WHEELRADIUS / (2 * axle)
-  if orientation == 'l':
-    particles.update_rotate(deg)
-  else:
-    particles.update_rotate(-deg)
-  particles.update_probability(get_sonar_distance())
-  particles.draw()
   while(abs(BrickPi.Encoder[motor1] - offset_1) < degrees
     and abs(BrickPi.Encoder[motor2] - offset_2) < degrees): 
     BrickPiUpdateValues()
-    time.sleep(.001)
-    #turnParticleDraw(turned)
+    time.sleep(.0001)
+  stop()
 
 def turnParticleDraw(turned):
   print turned
@@ -237,12 +231,8 @@ def timer(no_seconds):
   while(time.time() - ot < no_seconds): # running while loop for no_seconds seconds
     BrickPiUpdateValues()                # Ask BrickPi to update values for sensors/motors
     time.sleep(.01)                       # sleep for 100 ms
-'''
-for i in range(1):
-  input = raw_input(">")
-  if input == "s": 
-    back(2)
-    stop()
-  if input == "w":
-    fwd_amt(30)
-    stop()'''
+
+input = raw_input("angle>")
+while input != "":
+  rotate(int(input))
+  input = raw_input("angle>")
