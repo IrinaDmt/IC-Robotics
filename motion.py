@@ -19,7 +19,7 @@ BrickPiSetup()  # setup the serial port for communication
 
 motor1 = PORT_A
 motor2 = PORT_B
-SONAR_PORT = PORT_1
+SONAR_PORT = PORT_2
 speed_left = 0 
 speed_right = 0
 no_seconds_forward = 0.8775 # 30 cm
@@ -38,6 +38,37 @@ BrickPi.SensorType[SONAR_PORT] = TYPE_SENSOR_ULTRASONIC_CONT
 
 BrickPiSetupSensors()   #Send the properties of sensors to BrickPi
 particles.initialise()
+
+class Motor:
+  def __init__(self, port):
+    self.port = port
+    self.offset = 0
+    
+    self.enableMotor()
+    self.resetOffset()
+
+  def enableMotor(self):
+    BrickPi.MotorEnable[self.port] = 1
+    BrickPiUpdateValues()
+  
+  def resetOffset(self):
+    BrickPiUpdateValues()
+    offset = self.offset = BrickPi.Encoder[self.port]
+    print "RESET OFFSET TO", offset
+
+  def getOffset(self):
+    BrickPiUpdateValues()
+    return BrickPi.Encoder[self.port] - self.offset
+
+  def getOffsetDegrees(self):
+    return self.getOffset() / 2
+
+  def setSpeed(self, speed):
+    BrickPi.MotorSpeed[self.port] = speed
+    BrickPiUpdateValues()
+
+  def stop(self):
+    self.setSpeed(0)
 
 def get_sonar_distance():
   return BrickPi.Sensor[SONAR_PORT]
@@ -225,6 +256,119 @@ def stop():
   BrickPiUpdateValues()
   timer(1)
 
+
+# Create a new motor for our sonar motor
+sonar_motor = Motor(PORT_C)
+
+#SPIN_SPEED = 50
+
+def sonar_spin_left():
+  # COnfig params
+  SPIN_SPEED    = 50 
+  READ_INTERVAL = 4  # degrees
+
+  # Get start orientation
+  sonar_motor.resetOffset() 
+
+  # Get a reading
+  start_reading = get_sonar_distance()
+  
+  # Initialise list to store readings in
+  readings = []
+
+  # Remember the starting offset
+  offset = previous_offset = sonar_motor.getOffsetDegrees()
+  
+  if offset < 0:
+    time.sleep(1)
+    sonar_motor.resetOffset()
+
+  # Start spinning
+  print "Spinning forward from offset", offset
+  sonar_motor.setSpeed(SPIN_SPEED)
+
+  # When we've span X degrees, take another reading
+  while(offset < 360):
+    offset = sonar_motor.getOffsetDegrees()
+    diff = abs(offset - previous_offset)
+#    print "rotated", diff, "of", offset
+    if diff >= READ_INTERVAL:
+      #print "Hit the interval after rotating", (offset-previous_offset), "degrees!"
+      readings.append(get_sonar_distance())
+      previous_offset = offset
+    if diff <= 0:
+      print "jammed??"
+    BrickPiUpdateValues()
+  
+  print "......."
+
+  # Once we've hit 360, spin it back 360
+  sonar_motor.setSpeed(-SPIN_SPEED)
+  
+  while(offset < 0):
+    offset = sonar_motor.getOffsetDegrees()
+    if offset > -45:
+      sonar_motor.setSpeed((int)-SPIN_SPEED *0.3)
+
+  sonar_motor.stop()
+  return readings
+
+
+def sonar_spin():
+  # Configuration parameters for sonar_spin()
+  SPIN_SPEED    = -50
+  READ_INTERVAL = 4  # degrees
+
+  # Get start orientation
+  sonar_motor.resetOffset() 
+
+  # Get a reading
+  start_reading = get_sonar_distance()
+  
+  # Initialise list to store readings in
+  readings = []
+
+  # Remember the starting offset
+  offset = previous_offset = sonar_motor.getOffsetDegrees()
+  
+  if offset < 0:
+    time.sleep(1)
+    sonar_motor.resetOffset()
+
+  # Start spinning
+  print "Spinning forward from offset", offset
+  sonar_motor.setSpeed(SPIN_SPEED)
+
+  # When we've span X degrees, take another reading
+  while(offset > -180):
+    offset = sonar_motor.getOffsetDegrees()
+    diff = abs(offset - previous_offset)
+#    print "rotated", diff, "of", offset
+    if diff >= READ_INTERVAL:
+      #print "Hit the interval after rotating", (offset-previous_offset), "degrees!"
+      readings.append(get_sonar_distance())
+      previous_offset = offset
+    if diff <= 0:
+      print "jammed??"
+    BrickPiUpdateValues()
+  
+  print "......."
+
+  # Once we've hit 360, spin it back 360
+  sonar_motor.setSpeed(-SPIN_SPEED)
+  
+  while(offset < 0):
+    offset = sonar_motor.getOffsetDegrees()
+    if offset > -45:
+      sonar_motor.setSpeed(-SPIN_SPEED / 2)
+
+  sonar_motor.stop()
+  
+  
+
+  # Return the list of all the values.
+  return readings
+
 #Timer
 def timer(no_seconds):
   ot = time.time()
@@ -232,7 +376,3 @@ def timer(no_seconds):
     BrickPiUpdateValues()                # Ask BrickPi to update values for sensors/motors
     time.sleep(.01)                       # sleep for 100 ms
 
-input = raw_input("angle>")
-while input != "":
-  rotate(int(input))
-  input = raw_input("angle>")

@@ -1,15 +1,19 @@
-#import stuff
+from motion import *
 
 robo_name = '''
+
  _______               __                      __    
 |     __|.--.--.--.--.|  |--.----.--.--.-----.|  |--.
 |    |  ||  |  |  |  ||  _  |   _|  |  |__ --||     |
 |_______||_____|___  ||_____|__| |_____|_____||__|__|
                |_____|'''
-loc_sigs = {1:None, 2:None, 4:None, 5:None, 7:None}
-SONAR_STEP = 3
 
-class DepthHistogram(Object):
+locations = [1, 2, 4, 5, 7]
+loc_sigs = {1:None, 2:None, 4:None, 5:None, 7:None}
+dep_hists = {1:None, 2:None, 4:None, 5:None, 7:None}
+SONAR_STEP = 6
+
+class DepthHistogram(object):
     
     def __init__(self):
         self.frequencies = {}
@@ -25,7 +29,7 @@ class DepthHistogram(Object):
     def len(self):
         return len(self.frequencies)
     
-class LocationSignature(Object):
+class LocationSignature(object):
     
     def __init__(self):
         self.distances = {}
@@ -68,19 +72,32 @@ if __name__ == "__main__":
     mode = "prepare"
     
     if mode == "prepare":
-        for loc_sig in loc_sigs:
-            print "Please put Guybrush at point", loc_sig, "and press Enter"
-            dummy_variable = raw_input()
-            sonar_readings = sonar_spin()
+        for location in locations:
+            print "Please put Guybrush at point", location, "and press Enter"
+            dummy_variable_because_irina_doesnt_like_asdf_as_a_variable_name = raw_input()
+            sonar_readings = sonar_spin_left()
             
             #Create Location Signature
+            location_signature = LocationSignature()
+            for (distance_index, angle) in enumerate(range(0, 360, SONAR_STEP)):
+                location_signature.updateDistance(angle, sonar_readings[distance_index])
             
-            sigFileName = "loc_sig_" + str(loc_sig)
-            
+            sigFileName = "loc_sig_" + str(location)
+            writeGBFile(sigFileName, location_signature.getDistances())
+                #also store in dictionary just for the lolz
+            loc_sigs[location] = location_signature
+                #####
             
             #Create Depth Histogram
-            
-
+            depth_histogram = DepthHistogram()
+            for distance in sonar_readings:
+                depth_histogram.updateFreq(distance)
+                
+            histFileName = "dep_his_" + str(location)
+            writeGBFile(histFileName, depth_histogram.getFrequencies())
+                #also store in dictionary just for the lolz
+            dep_hists[location] = depth_histogram
+                #####
             
 
     elif mode == "deploy":
@@ -112,10 +129,10 @@ if __name__ == "__main__":
         loc_index = 0 
         while def_index < default_loc.len():
             if math.fabs(default_loc[def_index], loc[loc_index % loc.len()]) > 3:
-                loc_index++
+                loc_index+=1
             else:
-                def_index++
-                loc_index++
+                def_index+=1
+                loc_index+=1
     
         rotation = k * (loc_index % loc.len())
         print min_index, rotation    
