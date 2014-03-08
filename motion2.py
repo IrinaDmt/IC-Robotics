@@ -19,7 +19,7 @@ BrickPiSetup()  # setup the serial port for communication
 
 motor1 = PORT_A
 motor2 = PORT_B
-SONAR_PORT = PORT_2
+SONAR_PORT = PORT_1
 speed_left = 0 
 speed_right = 0
 no_seconds_forward = 0.8775 # 30 cm
@@ -300,17 +300,7 @@ def sonar_spin_left():
       print "jammed??"
     BrickPiUpdateValues()
   
-  print "......."
-
-  # Once we've hit 360, spin it back 360
-  sonar_motor.setSpeed(-SPIN_SPEED)
   
-  while(offset < 0):
-    offset = sonar_motor.getOffsetDegrees()
-    if offset > -45:
-      sonar_motor.setSpeed((int)-SPIN_SPEED *0.3)
-
-  sonar_motor.stop()
   return readings
 
 
@@ -338,9 +328,9 @@ def sonar_spin():
   # Start spinning
   print "Spinning forward from offset", offset
   sonar_motor.setSpeed(SPIN_SPEED)
-
+  init_offset = offset
   # When we've span X degrees, take another reading
-  while(offset > -180):
+  while(offset - init_offset < 360):
     offset = sonar_motor.getOffsetDegrees()
     diff = abs(offset - previous_offset)
 #    print "rotated", diff, "of", offset
@@ -351,23 +341,23 @@ def sonar_spin():
     if diff <= 0:
       print "jammed??"
     BrickPiUpdateValues()
-  
-  print "......."
-
-  # Once we've hit 360, spin it back 360
-  sonar_motor.setSpeed(-SPIN_SPEED)
-  
-  while(offset < 0):
-    offset = sonar_motor.getOffsetDegrees()
-    if offset > -45:
-      sonar_motor.setSpeed(-SPIN_SPEED / 2)
 
   sonar_motor.stop()
-  
-  
-
+    
   # Return the list of all the values.
   return readings
+
+def sonar_spin_back():
+  SPIN_SPEED = 30
+  offset = previous_offset = sonar_motor.getOffsetDegrees()
+  sonar_motor.setSpeed(SPIN_SPEED)
+  
+  while(offset - previous_offset < 360):
+    offset = sonar_motor.getOffsetDegrees()
+    previous_offset = offset
+    BrickPiUpdateValues()
+    
+    print offset
 
 #Timer
 def timer(no_seconds):
