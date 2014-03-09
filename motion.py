@@ -19,7 +19,7 @@ BrickPiSetup()  # setup the serial port for communication
 
 motor1 = PORT_A
 motor2 = PORT_B
-SONAR_PORT = PORT_1
+SONAR_PORT = PORT_4
 speed_left = 0 
 speed_right = 0
 no_seconds_forward = 0.8775 # 30 cm
@@ -71,15 +71,15 @@ class Motor:
     self.setSpeed(0)
 
 class SonarMotor:
-  def __init__(self, port, cog_ratio=(7.0/40.0)):
+  def __init__(self, port, cog_ratio=(7.0/34.5)): # 7 / 40 is the actual ratio, but we tweak values!
     self.motor = Motor(port)
 
     # Number of notches on motor cog / Number of notches on sonar cog
     print "Ratio =", cog_ratio
     self.ratio = cog_ratio
 
-    self.spin_speed = 200
-    self.min_callback_angle = 1
+    self.spin_speed = 50
+    self.min_callback_angle = 3
 
   def setSpinSpeed(self, spin_speed):
     self.spin_speed = spin_speed
@@ -109,14 +109,13 @@ class SonarMotor:
     while(offset < angle):
       offset = self.getSonarOffsetDegrees()
       diff = offset - previous_offset
-      print diff, "/", offset
+      
       if diff >= self.min_callback_angle:
         # Callback!
 	if callback:
-	  callback()
+	  callback(diff)
 	previous_offset = offset
-      BrickPiUpdateValues()
-
+      time.sleep(0.01)
     self.motor.stop()
 
 
@@ -126,14 +125,12 @@ class SonarMotor:
     offset = previous_offset = self.getSonarOffsetDegrees()
     self.motor.setSpeed(-self.spin_speed)
 
-    while(offset > angle):
+    while(offset > -angle):
       offset = self.getSonarOffsetDegrees()
-      diff = offset - previous_offset
-
+      diff = abs(offset - previous_offset)
       if diff >= self.min_callback_angle:
         if callback:
-	  print "!"
-          callback()
+          callback(diff)
 	previous_offset = offset
       BrickPiUpdateValues()
 
@@ -359,7 +356,26 @@ def sonar_spin_back():
     
   sonar_motor.stop()
 
+##############
+
+somo = SonarMotor(PORT_C)
+
 def sonar_spin():
+  readings = []
+  intervals = []
+
+  def sonar_spin_callback(diff):
+    readings.append(get_sonar_distance())
+    intervals.append(diff)
+
+  somo.rotateClockwise(360, sonar_spin_callback)
+  
+  return readings, intervals
+
+
+##############
+
+def sonar_spin_old():
   # Configuration parameters for sonar_spin()
   SPIN_SPEED    = -100
   READ_INTERVAL = 6  # degrees

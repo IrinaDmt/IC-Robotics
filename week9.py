@@ -56,10 +56,12 @@ class LocationSignature(object):
         self.distances = {}
         for i in xrange(len):
             self.distances[i] = None
-            
+        self.dict_index = 0
+
     def updateDistance(self, angle, distance):
-        self.distances[i] = (angle, distance)
-    
+        self.distances[self.dict_index] = (angle, distance)
+        self.dict_index += 1
+
     def getDistances(self):
         return self.distances
     
@@ -73,9 +75,12 @@ def readGBFile(fileName):
             line = line.replace('\n', '')
             (key, value) = line.split(',',1)
 	    if fileName[0] == 'l':
-	    	value = value.replace('(','').replace(')','').replace(' ','')
-	    	(angle, depth) = value.split(',')
-		dic[int(key)] = (int(angle), int(depth))
+	        if value == None:
+		  continue
+		value = value.replace('(','').replace(')','').replace(' ','')
+		print value
+	        (angle, depth) = value.split(',')
+                dic[int(key)] = (int(float(angle)), int(depth))
             else:
 	    	dic[int(key)] = int(value)
     return dic
@@ -99,13 +104,14 @@ if __name__ == "__main__":
         for location in locations:
             print "Please put Guybrush at point", location, "and press Enter"
             dummy_variable_because_irina_doesnt_like_asdf_as_a_variable_name = raw_input()
-            sonar_readings = init_readings #sonar_spin_left()
-	        sonar_intervals = init_intervals
+            sonar_readings, sonar_intervals = sonar_spin()
             ####TODO change above when using the real code
-	    
+	   
+	    print sonar_readings
+	    print len(sonar_readings)
             #Create Location Signature
             location_signature = LocationSignature(len(sonar_readings))
-            for i in xrange(len(init_readings)):
+            for i in xrange(len(sonar_readings)):
                 location_signature.updateDistance(sonar_intervals[i], sonar_readings[i])
             
             sigFileName = "loc_sig_" + str(location)
@@ -130,19 +136,20 @@ if __name__ == "__main__":
     elif mode == "d":
         k = 4 # no of degrees for each interval we measure
         hist = DepthHistogram()
-        readings = dep_readings#sonar_spin()
+        readings, intervals = sonar_spin()
         loc = LocationSignature(len(readings))
         histograms_no = 1 #todo
         given_histograms = []
-	    signature_filenames = []
-
+        signature_filenames = []
+        
+        waypoint_no = [1,2,4,5,7]
         # read the histogram files in memory
-        for i in [1,2,4,5,7]:
-           h = DepthHistogram()
-           dict = readGBFile("dep_his_"+str(i))
-           h.setFrequenciesFromDict(dict)
-           given_histograms.append(h)
-           signature_filenames.append("loc_sig_"+str(i))
+        for i in waypoint_no:
+            h = DepthHistogram()
+            dict = readGBFile("dep_his_"+str(i))
+            h.setFrequenciesFromDict(dict)
+            given_histograms.append(h)
+            signature_filenames.append("loc_sig_"+str(i))
 
         # create a histogram of the current readings
         for i in xrange(len(readings)):
@@ -158,16 +165,18 @@ if __name__ == "__main__":
             if min > sums[i]:
                 min = sums[i]
                 min_index = i
-   
+
+        print "Robot is at position", waypoint_no[min_index]
+
         # robot is at position min_index now
         # we've left to find the angle rotation
 
         # reading the learned sig file and putting it in an object
         default_loc_filename = signature_filenames[min_index]
         default_loc = readGBFile(default_loc_filename)
-		default_signature = LocationSignature(len(default_loc))
-		for i in xrange(len(default_loc)):
-	    	updateDistance(default_loc[i][0], default_loc[i][1])
+        default_signature = LocationSignature(len(default_loc))
+        for i in xrange(len(default_loc)):
+	    	default_signature.updateDistance(default_loc[i][0], default_loc[i][1])
 
         # reading the current sonar readings and putting it in an object
         curr_signature = LocationSignature(len(dep_readings))
@@ -182,14 +191,14 @@ if __name__ == "__main__":
         loc_index = 0
         
     	while def_index < len(default_loc):
-            if math.fabs(default_signature[def_index], curr_signature[loc_index % loc.len()]) > 3:
+            if math.fabs(default_signature.getDistances()[def_index][1] - curr_signature.getDistances()[loc_index % loc.len()][1]) > 3:
                 loc_index+=1
             else:
                 def_index+=1
                 loc_index+=1
     
         rotation = k * (loc_index % loc.len())
-        print min_index, rotation    
+        #print min_index, rotation    
 
     else:
         print "Please input argument prepare/deploy"
