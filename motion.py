@@ -54,7 +54,6 @@ class Motor:
   def resetOffset(self):
     BrickPiUpdateValues()
     offset = self.offset = BrickPi.Encoder[self.port]
-    print "RESET OFFSET TO", offset
 
   def getOffset(self):
     BrickPiUpdateValues()
@@ -106,7 +105,7 @@ class SonarMotor:
     # Spin up the motor
     self.motor.setSpeed(self.spin_speed)
 
-    while(offset < angle):
+    while(offset <= angle):
       offset = self.getSonarOffsetDegrees()
       diff = offset - previous_offset
       
@@ -128,12 +127,12 @@ class SonarMotor:
     while(offset > -angle):
       offset = self.getSonarOffsetDegrees()
       diff = abs(offset - previous_offset)
+      
       if diff >= self.min_callback_angle:
         if callback:
           callback(diff)
 	previous_offset = offset
-      BrickPiUpdateValues()
-
+      time.sleep(0.01)
     self.motor.stop()
     
 
@@ -368,7 +367,7 @@ def sonar_spin():
     readings.append(get_sonar_distance())
     intervals.append(diff)
 
-  somo.rotateClockwise(360, sonar_spin_callback)
+  somo.rotateAnticlockwise(360, sonar_spin_callback)
   
   return readings, intervals
 

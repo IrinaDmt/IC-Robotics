@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from motion import *
 
 robo_name = '''
@@ -12,15 +14,6 @@ locations = [1, 2, 4, 5, 7]
 loc_sigs = {1:None, 2:None, 4:None, 5:None, 7:None}
 dep_hists = {1:None, 2:None, 4:None, 5:None, 7:None}
 SONAR_STEP = 6
-
-#constants for debugging
-init_readings = [255, 255, 255, 255, 255, 255, 255, 36, 35, 37, 35, 33, 32, 33, 32, 33, 34, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 27, 24, 24, 26, 31, 32, 32, 32, 32, 28, 26, 26, 27, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32]
-init_intervals = [6, 7, 6, 7, 8, 8, 8, 6, 6, 7, 6, 7, 6, 7, 6, 6, 7, 6, 6, 6, 8, 7, 6, 8, 6, 7, 6, 7, 6, 8, 8, 7, 8, 8, 7, 8, 7, 7, 7, 6, 7, 6, 8, 8, 6, 8, 8, 6, 8, 6, 8, 6]
-
-dep_readings = [255, 255, 255, 255, 255, 255, 255, 36, 35, 35, 34, 33, 33, 32, 32, 33, 34, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 33, 34, 34, 27, 25, 24, 24, 24, 23, 23, 24, 26, 28, 28, 27, 28, 28, 28, 28, 28, 28, 28, 28]
-
-dep_intervals = [6, 6, 6, 7, 7, 8, 6, 6, 6, 7, 6, 6, 6, 7, 6, 6, 6, 6, 8, 6, 6, 8, 8, 7, 8, 7, 8, 7, 7, 7, 6, 7, 6, 6, 7, 7, 6, 7, 6, 6, 6, 6, 6, 7, 6, 7, 7, 7, 6, 8, 7, 7, 8, 7]
-
 
 class DepthHistogram(object):
     
@@ -53,6 +46,7 @@ class DepthHistogram(object):
 class LocationSignature(object):
     
     def __init__(self, len):
+        self.length = len
         self.distances = {}
         for i in xrange(len):
             self.distances[i] = None
@@ -66,8 +60,8 @@ class LocationSignature(object):
         return self.distances
     
     def len(self):
-        return len(self.distances)
-    
+        return self.length
+
 def readGBFile(fileName):
     dic = {}
     with open(fileName+".gb", 'r') as GBFile:
@@ -78,7 +72,6 @@ def readGBFile(fileName):
 	        if value == None:
 		  continue
 		value = value.replace('(','').replace(')','').replace(' ','')
-		print value
 	        (angle, depth) = value.split(',')
                 dic[int(key)] = (int(float(angle)), int(depth))
             else:
@@ -131,14 +124,18 @@ if __name__ == "__main__":
             dep_hists[location] = depth_histogram
                 #####
             depth_histogram.print2()
+
+	    print "Spinning robot back.."
+	    somo.rotateClockwise(360)
             
 
     elif mode == "d":
         k = 4 # no of degrees for each interval we measure
         hist = DepthHistogram()
         readings, intervals = sonar_spin()
-        loc = LocationSignature(len(readings))
-        histograms_no = 1 #todo
+        print readings
+	loc = LocationSignature(len(readings))
+        histograms_no = 5 #todo
         given_histograms = []
         signature_filenames = []
         
@@ -154,10 +151,10 @@ if __name__ == "__main__":
         # create a histogram of the current readings
         for i in xrange(len(readings)):
             hist.updateFreq(readings[i])
-
-        # compare it with all other histograms
+        
+	# compare it with all other histograms
         sums = [0,0,0,0,0] # must have a fixed number of 5 histograms
-        min = 1000
+        min = 255 * 1000 # Way higher than we would possibly get
         min_index = -1
         for i in xrange(len(given_histograms)):
             for j in xrange(hist.len()):
@@ -165,6 +162,8 @@ if __name__ == "__main__":
             if min > sums[i]:
                 min = sums[i]
                 min_index = i
+
+        print sums
 
         print "Robot is at position", waypoint_no[min_index]
 
@@ -176,12 +175,12 @@ if __name__ == "__main__":
         default_loc = readGBFile(default_loc_filename)
         default_signature = LocationSignature(len(default_loc))
         for i in xrange(len(default_loc)):
-	    	default_signature.updateDistance(default_loc[i][0], default_loc[i][1])
+	    default_signature.updateDistance(default_loc[i][0], default_loc[i][1])
 
         # reading the current sonar readings and putting it in an object
-        curr_signature = LocationSignature(len(dep_readings))
-        for i in xrange(len(dep_readings)):
-			curr_signature.updateDistance(dep_intervals[i], dep_readings[i])
+        curr_signature = LocationSignature(len(readings))
+        for i in xrange(len(readings)):
+	    curr_signature.updateDistance(intervals[i], readings[i])
 
     	# now we need to interpolate the new readings
 
@@ -191,14 +190,19 @@ if __name__ == "__main__":
         loc_index = 0
         
     	while def_index < len(default_loc):
-            if math.fabs(default_signature.getDistances()[def_index][1] - curr_signature.getDistances()[loc_index % loc.len()][1]) > 3:
+	    "LL"
+	    def_value = default_signature.getDistances()[def_index][1]
+	    curr_value = curr_signature.getDistances()[loc_index % loc.len()][1]
+            if math.fabs(def_value - curr_value) > 3:
                 loc_index+=1
             else:
                 def_index+=1
                 loc_index+=1
     
         rotation = k * (loc_index % loc.len())
-        #print min_index, rotation    
+        #print min_index, rotation
+
+	somo.rotateClockwise(360)
 
     else:
         print "Please input argument prepare/deploy"
