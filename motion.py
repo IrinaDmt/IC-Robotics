@@ -70,6 +70,76 @@ class Motor:
   def stop(self):
     self.setSpeed(0)
 
+class SonarMotor:
+  def __init__(self, port, cog_ratio=(7.0/40.0)):
+    self.motor = Motor(port)
+
+    # Number of notches on motor cog / Number of notches on sonar cog
+    print "Ratio =", cog_ratio
+    self.ratio = cog_ratio
+
+    self.spin_speed = 200
+    self.min_callback_angle = 1
+
+  def setSpinSpeed(self, spin_speed):
+    self.spin_speed = spin_speed
+
+  def setMinCallbackAngle(self, angle):
+    self.min_callback_angle = angle
+  
+  def angleMotorToSensor(self, motor_degrees):
+    return motor_degrees * self.ratio
+
+  def angleSensorToMotor(self, sensor_degrees):
+    return sensor_degrees / self.ratio
+
+  def getSonarOffsetDegrees(self):
+    return self.angleMotorToSensor(self.motor.getOffsetDegrees())
+
+  def rotateClockwise(self, angle, callback=None):
+    # Reset the motor's current offset to 0
+    self.motor.resetOffset()
+
+    # Remember the starting offset (should be 0!)
+    offset = previous_offset = self.getSonarOffsetDegrees()
+
+    # Spin up the motor
+    self.motor.setSpeed(self.spin_speed)
+
+    while(offset < angle):
+      offset = self.getSonarOffsetDegrees()
+      diff = offset - previous_offset
+      print diff, "/", offset
+      if diff >= self.min_callback_angle:
+        # Callback!
+	if callback:
+	  callback()
+	previous_offset = offset
+      BrickPiUpdateValues()
+
+    self.motor.stop()
+
+
+  def rotateAnticlockwise(self, angle, callback=None):
+    self.motor.resetOffset()
+
+    offset = previous_offset = self.getSonarOffsetDegrees()
+    self.motor.setSpeed(-self.spin_speed)
+
+    while(offset > angle):
+      offset = self.getSonarOffsetDegrees()
+      diff = offset - previous_offset
+
+      if diff >= self.min_callback_angle:
+        if callback:
+	  print "!"
+          callback()
+	previous_offset = offset
+      BrickPiUpdateValues()
+
+    self.motor.stop()
+    
+
 def get_sonar_distance():
   return BrickPi.Sensor[SONAR_PORT]
 
@@ -291,7 +361,7 @@ def sonar_spin_back():
 
 def sonar_spin():
   # Configuration parameters for sonar_spin()
-  SPIN_SPEED    = -40
+  SPIN_SPEED    = -100
   READ_INTERVAL = 6  # degrees
 
   # Get start orientation

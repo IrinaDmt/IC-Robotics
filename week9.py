@@ -13,6 +13,15 @@ loc_sigs = {1:None, 2:None, 4:None, 5:None, 7:None}
 dep_hists = {1:None, 2:None, 4:None, 5:None, 7:None}
 SONAR_STEP = 6
 
+#constants for debugging
+init_readings = [255, 255, 255, 255, 255, 255, 255, 36, 35, 37, 35, 33, 32, 33, 32, 33, 34, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 27, 24, 24, 26, 31, 32, 32, 32, 32, 28, 26, 26, 27, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32]
+init_intervals = [6, 7, 6, 7, 8, 8, 8, 6, 6, 7, 6, 7, 6, 7, 6, 6, 7, 6, 6, 6, 8, 7, 6, 8, 6, 7, 6, 7, 6, 8, 8, 7, 8, 8, 7, 8, 7, 7, 7, 6, 7, 6, 8, 8, 6, 8, 8, 6, 8, 6, 8, 6]
+
+readings = [255, 255, 255, 255, 255, 255, 255, 36, 35, 35, 34, 33, 33, 32, 32, 33, 34, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 33, 34, 34, 27, 25, 24, 24, 24, 23, 23, 24, 26, 28, 28, 27, 28, 28, 28, 28, 28, 28, 28, 28]
+
+intervals = [6, 6, 6, 7, 7, 8, 6, 6, 6, 7, 6, 6, 6, 7, 6, 6, 6, 6, 8, 6, 6, 8, 8, 7, 8, 7, 8, 7, 7, 7, 6, 7, 6, 6, 7, 7, 6, 7, 6, 6, 6, 6, 6, 7, 6, 7, 7, 7, 6, 8, 7, 7, 8, 7]
+
+
 class DepthHistogram(object):
     
     def __init__(self):
@@ -29,15 +38,20 @@ class DepthHistogram(object):
     def len(self):
         return len(self.frequencies)
     
+    def print2(self):
+       for i in xrange(len(self.frequencies)):
+         if self.frequencies[i] != 0:
+           print i, ":", self.frequencies[i]
+
 class LocationSignature(object):
     
-    def __init__(self):
+    def __init__(self, len):
         self.distances = {}
-        for i in xrange(0, 360, SONAR_STEP):
+        for i in xrange(len):
             self.distances[i] = None
             
     def updateDistance(self, angle, distance):
-        self.distances[angle] = distance
+        self.distances[i] = (angle, distance)
     
     def getDistances(self):
         return self.distances
@@ -66,21 +80,21 @@ def writeGBFile(fileName, dic):
 if __name__ == "__main__":
     print robo_name
     mode = None
-    #while mode != "deploy" and mode != "prepare":
-    #    mode = raw_input("Enter mode (prepare/deploy): ")
-    
-    mode = "prepare"
+    while mode != "deploy" and mode != "prepare":
+      mode = raw_input("Enter mode (prepare/deploy): ")
     
     if mode == "prepare":
         for location in locations:
             print "Please put Guybrush at point", location, "and press Enter"
             dummy_variable_because_irina_doesnt_like_asdf_as_a_variable_name = raw_input()
-            sonar_readings = sonar_spin_left()
-            
+            sonar_readings = init_readings #sonar_spin_left()
+	    sonar_intervals = init_intervals
+            ####TODO change above when using the real code
+	    
             #Create Location Signature
-            location_signature = LocationSignature()
-            for (distance_index, angle) in enumerate(range(0, 360, SONAR_STEP)):
-                location_signature.updateDistance(angle, sonar_readings[distance_index])
+            location_signature = LocationSignature(len(sonar_readings))
+            for i in xrange(len(init_readings)):
+                location_signature.updateDistance(sonar_intervals[i], sonar_readings[i])
             
             sigFileName = "loc_sig_" + str(location)
             writeGBFile(sigFileName, location_signature.getDistances())
@@ -98,6 +112,7 @@ if __name__ == "__main__":
                 #also store in dictionary just for the lolz
             dep_hists[location] = depth_histogram
                 #####
+            depth_histogram.print2()
             
 
     elif mode == "deploy":
