@@ -100,7 +100,7 @@ if __name__ == "__main__":
             print "Please put Guybrush at point", location, "and press Enter"
             dummy_variable_because_irina_doesnt_like_asdf_as_a_variable_name = raw_input()
             sonar_readings = init_readings #sonar_spin_left()
-	    sonar_intervals = init_intervals
+	        sonar_intervals = init_intervals
             ####TODO change above when using the real code
 	    
             #Create Location Signature
@@ -134,15 +134,15 @@ if __name__ == "__main__":
         loc = LocationSignature(len(readings))
         histograms_no = 1 #todo
         given_histograms = []
-	signature_filenames = []
+	    signature_filenames = []
 
         # read the histogram files in memory
-	for i in [1,2,4,5,7]:
-	  h = DepthHistogram()
-	  dict = readGBFile("dep_his_"+str(i))
-	  h.setFrequenciesFromDict(dict)
-          given_histograms.append(h)
-	  signature_filenames.append("loc_sig_"+str(i))
+        for i in [1,2,4,5,7]:
+           h = DepthHistogram()
+           dict = readGBFile("dep_his_"+str(i))
+           h.setFrequenciesFromDict(dict)
+           given_histograms.append(h)
+           signature_filenames.append("loc_sig_"+str(i))
 
         # create a histogram of the current readings
         for i in xrange(len(readings)):
@@ -174,15 +174,15 @@ if __name__ == "__main__":
         for i in xrange(len(dep_readings)):
 			curr_signature.updateDistance(dep_intervals[i], dep_readings[i])
 
-	# now we need to interpolate the new readings
+    	# now we need to interpolate the new readings
 
 
         # comparing the two maps to find the angle we're at
-	def_index = 0 
-        loc_index = 0 
+    	def_index = 0
+        loc_index = 0
         
-	while def_index < len(default_loc):
-            if math.fabs(default_loc[def_index], loc[loc_index % loc.len()]) > 3:
+    	while def_index < len(default_loc):
+            if math.fabs(default_signature[def_index], curr_signature[loc_index % loc.len()]) > 3:
                 loc_index+=1
             else:
                 def_index+=1
