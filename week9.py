@@ -17,9 +17,9 @@ SONAR_STEP = 6
 init_readings = [255, 255, 255, 255, 255, 255, 255, 36, 35, 37, 35, 33, 32, 33, 32, 33, 34, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 27, 24, 24, 26, 31, 32, 32, 32, 32, 28, 26, 26, 27, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32]
 init_intervals = [6, 7, 6, 7, 8, 8, 8, 6, 6, 7, 6, 7, 6, 7, 6, 6, 7, 6, 6, 6, 8, 7, 6, 8, 6, 7, 6, 7, 6, 8, 8, 7, 8, 8, 7, 8, 7, 7, 7, 6, 7, 6, 8, 8, 6, 8, 8, 6, 8, 6, 8, 6]
 
-readings = [255, 255, 255, 255, 255, 255, 255, 36, 35, 35, 34, 33, 33, 32, 32, 33, 34, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 33, 34, 34, 27, 25, 24, 24, 24, 23, 23, 24, 26, 28, 28, 27, 28, 28, 28, 28, 28, 28, 28, 28]
+dep_readings = [255, 255, 255, 255, 255, 255, 255, 36, 35, 35, 34, 33, 33, 32, 32, 33, 34, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 33, 34, 34, 27, 25, 24, 24, 24, 23, 23, 24, 26, 28, 28, 27, 28, 28, 28, 28, 28, 28, 28, 28]
 
-intervals = [6, 6, 6, 7, 7, 8, 6, 6, 6, 7, 6, 6, 6, 7, 6, 6, 6, 6, 8, 6, 6, 8, 8, 7, 8, 7, 8, 7, 7, 7, 6, 7, 6, 6, 7, 7, 6, 7, 6, 6, 6, 6, 6, 7, 6, 7, 7, 7, 6, 8, 7, 7, 8, 7]
+dep_intervals = [6, 6, 6, 7, 7, 8, 6, 6, 6, 7, 6, 6, 6, 7, 6, 6, 6, 6, 8, 6, 6, 8, 8, 7, 8, 7, 8, 7, 7, 7, 6, 7, 6, 6, 7, 7, 6, 7, 6, 6, 6, 6, 6, 7, 6, 7, 7, 7, 6, 8, 7, 7, 8, 7]
 
 
 class DepthHistogram(object):
@@ -31,10 +31,17 @@ class DepthHistogram(object):
     
     def updateFreq(self, depth):
         self.frequencies[depth] += 1
-    
+
+    def setFrequenciesFromDict(self, dict):
+        for k, v in dict.iteritems():
+	  self.frequencies[k] = v
+
     def getFrequencies(self):
         return self.frequencies
-    
+   
+    def getFrequencyOf(self, depth):
+        return self.frequencies[depth]
+
     def len(self):
         return len(self.frequencies)
     
@@ -64,8 +71,13 @@ def readGBFile(fileName):
     with open(fileName+".gb", 'r') as GBFile:
         for line in GBFile.readlines():
             line = line.replace('\n', '')
-            (key, value) = line.split(',')
-            dic[int(key)] = int(value)
+            (key, value) = line.split(',',1)
+	    if fileName[0] == 'l':
+	    	value = value.replace('(','').replace(')','').replace(' ','')
+	    	(angle, depth) = value.split(',')
+		dic[int(key)] = (int(angle), int(depth))
+            else:
+	    	dic[int(key)] = int(value)
     return dic
 
 def writeGBFile(fileName, dic):
@@ -80,10 +92,10 @@ def writeGBFile(fileName, dic):
 if __name__ == "__main__":
     print robo_name
     mode = None
-    while mode != "deploy" and mode != "prepare":
-      mode = raw_input("Enter mode (prepare/deploy): ")
+    while mode != "d" and mode != "p":
+      mode = raw_input("Enter mode (prepare as p/deploy as d): ")
     
-    if mode == "prepare":
+    if mode == "p":
         for location in locations:
             print "Please put Guybrush at point", location, "and press Enter"
             dummy_variable_because_irina_doesnt_like_asdf_as_a_variable_name = raw_input()
@@ -115,34 +127,61 @@ if __name__ == "__main__":
             depth_histogram.print2()
             
 
-    elif mode == "deploy":
+    elif mode == "d":
         k = 4 # no of degrees for each interval we measure
         hist = DepthHistogram()
-        loc = LocationSignature()
-        readings = sonar_spin()
-        histograms_no = 5 #todo
-            
+        readings = dep_readings#sonar_spin()
+        loc = LocationSignature(len(readings))
+        histograms_no = 1 #todo
+        given_histograms = []
+	signature_filenames = []
+
+        # read the histogram files in memory
+	for i in [1,2,4,5,7]:
+	  h = DepthHistogram()
+	  dict = readGBFile("dep_his_"+str(i))
+	  h.setFrequenciesFromDict(dict)
+          given_histograms.append(h)
+	  signature_filenames.append("loc_sig_"+str(i))
+
         # create a histogram of the current readings
         for i in xrange(len(readings)):
             hist.updateFreq(readings[i])
 
         # compare it with all other histograms
-        sums = []
+        sums = [0,0,0,0,0] # must have a fixed number of 5 histograms
         min = 1000
         min_index = -1
-        for i in xrange(histograms_no):
+        for i in xrange(len(given_histograms)):
             for j in xrange(hist.len()):
-                sums[i] += (hist[j] - given_histogram[i][j]) ** 2
+                sums[i] += (hist.getFrequencyOf(j) - given_histograms[i].getFrequencyOf(j)) ** 2
             if min > sums[i]:
                 min = sums[i]
                 min_index = i
-    
+   
         # robot is at position min_index now
         # we've left to find the angle rotation
-        default_loc = getLocationSignature(min_index)
-        def_index = 0 
+
+        # reading the learned sig file and putting it in an object
+        default_loc_filename = signature_filenames[min_index]
+        default_loc = readGBFile(default_loc_filename)
+		default_signature = LocationSignature(len(default_loc))
+		for i in xrange(len(default_loc)):
+	    	updateDistance(default_loc[i][0], default_loc[i][1])
+
+        # reading the current sonar readings and putting it in an object
+        curr_signature = LocationSignature(len(dep_readings))
+        for i in xrange(len(dep_readings)):
+			curr_signature.updateDistance(dep_intervals[i], dep_readings[i])
+
+	# now we need to interpolate the new readings
+
+
+        # comparing the two maps to find the angle we're at
+	def_index = 0 
         loc_index = 0 
-        while def_index < default_loc.len():
+        
+	while def_index < len(default_loc):
             if math.fabs(default_loc[def_index], loc[loc_index % loc.len()]) > 3:
                 loc_index+=1
             else:
