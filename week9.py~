@@ -209,9 +209,9 @@ if __name__ == "__main__":
         	cheese_balls += (default_signature.distances[j][1] - curr_signature.distances[(j+i)%len(new_dist_len)][1]) ** 2
        	if cheese_balls < mini:
         	mini = cheese_balls
-        	min_angle = i*gcd
+        	min_angle = 
     
-
+        rotation = figure it out from min_angle
         #print min_index, rotation
         '''
         # comparing the two maps to find the angle we're at

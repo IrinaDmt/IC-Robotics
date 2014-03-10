@@ -303,7 +303,6 @@ def sonar_spin_left():
   
   return readings
 
-
 def sonar_spin():
   # Configuration parameters for sonar_spin()
   SPIN_SPEED    = -50
