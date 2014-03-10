@@ -69,6 +69,9 @@ class LocationSignature(object):
     def len(self):
         return self.length
 
+    def insertDistance(self, index, angle, distance):
+        self.distances.insert(index, (angle, distance))
+
 def readGBFile(fileName):
     dic = {}
     with open(fileName+".gb", 'r') as GBFile:
@@ -80,7 +83,7 @@ def readGBFile(fileName):
 		  continue
 		value = value.replace('(','').replace(')','').replace(' ','')
 	        (angle, depth) = value.split(',')
-                dic[int(key)] = (int(float(angle)), int(depth))
+                dic[int(key)] = (float(angle), int(depth))
             else:
 	    	dic[int(key)] = int(value)
     return dic
@@ -107,8 +110,6 @@ if __name__ == "__main__":
             sonar_readings, sonar_intervals = sonar_spin()
             ####TODO change above when using the real code
 	   
-	    print sonar_readings
-	    print len(sonar_readings)
             #Create Location Signature
             location_signature = LocationSignature(len(sonar_readings))
             for i in xrange(len(sonar_readings)):
@@ -140,27 +141,29 @@ if __name__ == "__main__":
     elif mode == "d":
         k = 4 # no of degrees for each interval we measure
         hist = DepthHistogram()
-        '''read_dictionary = readGBFile("location_round_2/loc_sig_1")
-        intervals_init = []
-        readings_init = []
-        for i in xrange(len(read_dictionary)):
-          intervals_init.append(read_dictionary[i][0])
-          readings_init.append(read_dictionary[i][1])
+        
+	debug_mode = raw_input("debug mode(y/n)>")
 
-        intervals = []
-        readings = []
+	if debug_mode == "y":
+          read_dictionary = readGBFile("location_round_2/loc_sig_1")
+          intervals_init = []
+          readings_init = []
+          for i in xrange(len(read_dictionary)):
+            intervals_init.append(read_dictionary[i][0])
+            readings_init.append(read_dictionary[i][1])
 
-        #shifting the sample values
-        for i in range(len(intervals_init)/4, len(intervals_init) + len(intervals_init)/4):
-          intervals.append(intervals_init[i % len(intervals_init)])
-          readings.append(readings_init[i % len(readings_init)])
+          intervals = []
+          readings = []
 
-        print len(readings_init)
-        print len(readings)     
-        '''
-        readings = []
-        intervals = []
-        readings,intervals = sonar_spin()
+          #shifting the sample values
+          for i in range(len(intervals_init)/4, len(intervals_init) + len(intervals_init)/4):
+            intervals.append(intervals_init[i % len(intervals_init)])
+            readings.append(readings_init[i % len(readings_init)])
+
+        else:
+          readings = []
+          intervals = []
+          readings,intervals = sonar_spin()
 
 	loc = LocationSignature(len(readings))
         histograms_no = 5 #todo
@@ -213,7 +216,7 @@ if __name__ == "__main__":
     	# now we need to interpolate the new readings
 	def georgeTrick(distances, i, interval):
 	  return distances[i*interval:(i+1)*interval]
-			
+        '''
 	new_dist_len = gcd(len(default_signature.distances),len(curr_signature.distances))
 	new_dic = {}
 	for i in range(new_dist_len):
@@ -231,7 +234,7 @@ if __name__ == "__main__":
     	
     	mini = 255 * 1000 # Way higher than we would possibly get
     	min_angle = 0
-
+        '''
         '''
     	for i in xrange(new_dist_len):
     	  cheese_balls = 0
@@ -245,30 +248,63 @@ if __name__ == "__main__":
             min_angle = i*gcd
 	#print min_index, rotation
         '''
-        
+        print default_signature.distances
         # Rotation stuff
         dlen = default_signature.len()
 	clen = curr_signature.len()
-        min_length = min(dlen, clen)
-	
+        max_length = max(dlen, clen)
+
+        dlist = []
+	clist = []
+	for i in xrange(dlen):
+	  dlist.append(default_signature.getDistance(i))
+
+        for i in xrange(clen):
+	  clist.append(curr_signature.getDistance(i))
+
+        while len(dlist) < max_length:
+	  diff = len(clist) - len(dlist)
+          for i in xrange(dlen/diff):
+	    if len(dlist) < max_length:
+	      tuple = default_signature.getDistance(i)
+	      dlist.insert(i * diff, tuple)
+	      dlen += 1
+
+	while clen < max_length:
+	  diff = dlen - clen
+          for i in xrange(clen/diff):
+	    if clen < max_length:
+	      tuple = curr_signature.getDistance(i)
+	      clist.insert(i * diff, tuple)
+	      clen += 1
+
+        def_dict = {}
+	curr_dict = {}
+        for i in xrange(len(dlist)):
+	  def_dict[i] = dlist[i]
+	  curr_dict[i] = clist[i]
+
+	curr_signature.setDistances(curr_dict)
+	default_signature.setDistances(def_dict)
+
 	sums = []
 	min_sum = 999999999
 	min_index = -1
-	for i in xrange(min_length):
+	for i in xrange(max_length):
 	  sums.append(0)
 	  sums[i] = 0
-	  for j in xrange(min_length):
-	    sums[i] += ((default_signature.getDistance(0)[1][j] - curr_signature.getDistance(0)[1][(j + i) % min_length]) ** 2)
-
+	  for j in xrange(max_length):
+	    sums[i] += ((default_signature.getDistance(j)[1] - curr_signature.getDistance((j + i) % max_length)[1]) ** 2)
 
         for i in xrange(len(sums)):
 	  if sums[i] < min_sum:
 	    min_sum = sums[i]
 	    min_index = i
 
-	print "Angle is", ceil(float(min_index)/float(min_length) * 360)
+	print "Angle is", 360 - ceil(float(min_index)/float(max_length) * 360)
 
-	somo.rotateClockwise(360)
+	if debug_mode != "y":
+	  somo.rotateClockwise(360)
 
     else:
         print "Please input argument prepare/deploy"
