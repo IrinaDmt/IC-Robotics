@@ -140,7 +140,28 @@ if __name__ == "__main__":
     elif mode == "d":
         k = 4 # no of degrees for each interval we measure
         hist = DepthHistogram()
-        readings, intervals = sonar_spin() #([255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255], [3.246376811594203, 3.0434782608695654, 3.449275362318841, 3.6521739130434785, 3.0434782608695645, 3.6521739130434803, 3.855072463768117, 3.6521739130434767, 3.6521739130434767, 3.855072463768117, 3.6521739130434767, 3.652173913043484, 3.85507246376811, 3.855072463768117, 3.652173913043484, 3.6521739130434767, 3.855072463768117, 3.6521739130434767, 3.85507246376811, 3.652173913043484, 3.652173913043484, 3.85507246376811, 3.652173913043484, 3.85507246376811, 3.0434782608695627, 3.855072463768124, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.855072463768124, 3.652173913043484, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.85507246376811, 3.652173913043498, 3.6521739130434696, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.652173913043498, 3.6521739130434696, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.652173913043498, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.6521739130434696, 3.855072463768124, 3.855072463768124, 3.855072463768124, 3.6521739130434696, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.855072463768124, 3.6521739130434696, 3.652173913043498, 3.855072463768124, 3.652173913043441, 3.652173913043498, 3.855072463768124, 3.652173913043441, 3.652173913043498, 3.855072463768124, 3.652173913043498, 3.652173913043441, 3.855072463768124, 3.652173913043498, 3.652173913043441, 3.855072463768124, 3.652173913043498, 3.652173913043498, 3.652173913043441, 3.855072463768124, 3.855072463768124, 3.652173913043498, 3.652173913043441, 3.855072463768124, 3.652173913043498, 3.652173913043441, 3.855072463768124, 3.652173913043498, 3.855072463768124, 3.652173913043498])
+        '''read_dictionary = readGBFile("location_round_2/loc_sig_1")
+        intervals_init = []
+        readings_init = []
+        for i in xrange(len(read_dictionary)):
+          intervals_init.append(read_dictionary[i][0])
+          readings_init.append(read_dictionary[i][1])
+
+        intervals = []
+        readings = []
+
+        #shifting the sample values
+        for i in range(len(intervals_init)/4, len(intervals_init) + len(intervals_init)/4):
+          intervals.append(intervals_init[i % len(intervals_init)])
+          readings.append(readings_init[i % len(readings_init)])
+
+        print len(readings_init)
+        print len(readings)     
+        '''
+        readings = []
+        intervals = []
+        readings,intervals = sonar_spin()
+
 	loc = LocationSignature(len(readings))
         histograms_no = 5 #todo
         given_histograms = []
@@ -194,7 +215,6 @@ if __name__ == "__main__":
 	  return distances[i*interval:(i+1)*interval]
 			
 	new_dist_len = gcd(len(default_signature.distances),len(curr_signature.distances))
-        print default_signature.distances	
 	new_dic = {}
 	for i in range(new_dist_len):
 	  interpolation = georgeTrick(map(lambda x: x[1], default_signature.distances.values()), i, len(default_signature.distances)/new_dist_len)
@@ -206,7 +226,7 @@ if __name__ == "__main__":
 	  new_dic[i] = (i*(360/new_dist_len), georgeTrick(map(lambda x: x[1], list(curr_signature.distances.values())), i, len(curr_signature.distances)/new_dist_len))
 	  curr_signature.distances = new_dic
 			
-        print ">>", default_signature.distances			
+        #print ">>", default_signature.distances			
         # comparing the two maps to find the angle we're at
     	
     	mini = 255 * 1000 # Way higher than we would possibly get
@@ -225,24 +245,6 @@ if __name__ == "__main__":
             min_angle = i*gcd
 	#print min_index, rotation
         '''
-	
-        '''# comparing the two maps to find the angle we're at
-	def_index = 0
-        loc_index = 0
-        
-    	while def_index < len(default_loc):
-	  "LL"
-	  def_value = default_signature.getDistances()[def_index][1]
-	  curr_value = curr_signature.getDistances()[loc_index % loc.len()][1]
-          if math.fabs(def_value - curr_value) > 3:
-            loc_index+=1
-          else:
-            def_index+=1
-            loc_index+=1
-    
-        rotation = k * (loc_index % loc.len())
-        #print min_index, rotation
-        '''
         
         # Rotation stuff
         dlen = default_signature.len()
@@ -250,19 +252,21 @@ if __name__ == "__main__":
         min_length = min(dlen, clen)
 	
 	sums = []
-	min_sum = 999999
+	min_sum = 999999999
 	min_index = -1
 	for i in xrange(min_length):
 	  sums.append(0)
 	  sums[i] = 0
 	  for j in xrange(min_length):
-	    sums[i] += (default_signature.getDistance(0)[1][j] - curr_signature.getDistance(0)[1][(j + i) % min_length] ** 2)
+	    sums[i] += ((default_signature.getDistance(0)[1][j] - curr_signature.getDistance(0)[1][(j + i) % min_length]) ** 2)
 
+
+        for i in xrange(len(sums)):
 	  if sums[i] < min_sum:
 	    min_sum = sums[i]
 	    min_index = i
-	
-	print "Min index::", i
+
+	print "Angle is", ceil(float(min_index)/float(min_length) * 360)
 
 	somo.rotateClockwise(360)
 
