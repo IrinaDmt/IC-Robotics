@@ -15,6 +15,7 @@ locations = [1, 2, 4, 5, 7]
 loc_sigs = {1:None, 2:None, 4:None, 5:None, 7:None}
 dep_hists = {1:None, 2:None, 4:None, 5:None, 7:None}
 SONAR_STEP = 6
+waypoints = {1:(84,30), 2:(180,30), 4:(126,54), 5:(126,168),7:(30,54)}
 
 class DepthHistogram(object):
     
@@ -197,6 +198,7 @@ if __name__ == "__main__":
         print sums
 
         print "Robot is at position", waypoint_no[min_index]
+        detected_waypoint = waypoint_no[min_index]
 
         # robot is at position min_index now
         # we've left to find the angle rotation
@@ -301,10 +303,36 @@ if __name__ == "__main__":
 	    min_sum = sums[i]
 	    min_index = i
 
-	print "Angle is", 360 - ceil(float(min_index)/float(max_length) * 360)
+        angle = 360 - ceil(float(min_index)/float(max_length) * 360)
+        print "Waypoint", detected_waypoint, ", angle:", angle
 
+        min_index = detected_waypoint
+	if min_index == 1:
+          path = [waypoints[7], waypoints[2], waypoints[4], waypoints[5], waypoints[1]]
+        elif min_index == 2:
+          path = [waypoints[7], waypoints[4], waypoints[5], waypoints[1], waypoints[2]]
+        elif min_index == 4:
+          path = [waypoints[5], waypoints[1], waypoints[7], waypoints[2], waypoints[4]]
+        elif min_index == 5:
+          path = [waypoints[1], waypoints[7], waypoints[2], waypoints[4], waypoints[5]]
+        elif min_index == 7:
+          path = [waypoints[2], waypoints[4], waypoints[5], waypoints[1], waypoints[7]]
+        else:
+          print "this is not supposed to happen !!!!!!!!!!!!!!!!!!!!!!!"
+          path = [waypoints[1], waypoints[2], waypoints[4], waypoints[5], waypoints[7]]
+
+        #Set the current location to what weve estimated..
+        set_location(waypoints[min_index][0], waypoints[min_index][1], (360-angle))
+
+        for i in xrange(len(path)):
+          print "Navigating to waypoint at", path[i]
+	  if debug_mode != "y":
+            navigateToWaypoint(path[i][0], path[i][1])
+          # Here we would flash the thing!!
+          time.sleep(1)
+        
 	if debug_mode != "y":
 	  somo.rotateClockwise(360)
-
+        
     else:
         print "Please input argument prepare/deploy"

@@ -270,6 +270,9 @@ def turnParticleDraw(turned):
 def estimate_location():
   return particles.estimate_location()
 
+def set_location(x, y, angle):
+  particles.initialise(x, y, angle)
+
 def navigateToWaypoint(x, y):
   (currentX, currentY, currentAngle) = particles.estimate_location()
 
@@ -311,7 +314,16 @@ def navigateToWaypoint(x, y):
   stop()
   time.sleep(0.05)
   particles.update_forward(forward_amount)
-  particles.update_probability(get_sonar_distance())
+  for i in range(0,9):
+    sonar_reading = get_sonar_distance()
+    if sonar_reading < 255:
+      particles.update_probability(sonar_reading)
+      break
+    else:
+      time.sleep(0.1)
+  else:
+    particles.update_probability(get_sonar_distance())
+
   particles.draw()
 
 #Stop

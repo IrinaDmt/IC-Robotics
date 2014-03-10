@@ -4,14 +4,14 @@ import random, sys, math
 NUMBER_OF_PARTICLES = 100
 mu = 0
 #below are standard deviations
-sigma = 15 #straight line deviation 
+sigma = 5 #straight line deviation 
 # (average distance between how far our robot travelled and how far we wanted it to travel)
-rotation_sigma = 30 #rotation deviation (in degrees)
-motor_sigma = 30 #angular deviation of our robot whilst driving in a straight line
+rotation_sigma = 5 #rotation deviation (in degrees)
+motor_sigma = 25 #angular deviation of our robot whilst driving in a straight line
 #the above could be caused by one motor accidentally going slightly faster than another
 
 robustness_constant = 0.10 #(10% chance of random sonar values)
-sonar_sigma = 2 # 
+sonar_sigma = 4 # 
 
 particle_list = []
 
@@ -129,9 +129,11 @@ class Particle:
 
 #import these using "import particles",
 # then call using namespace identifier, e.g. particles.initialise()
-def initialise():
+def initialise(x=84, y=30, angle=0):
+  global particle_list
+  particle_list = []
   for i in range(NUMBER_OF_PARTICLES):
-    particle_list.append(Particle(84, 30, 0, 1.0 / NUMBER_OF_PARTICLES)) #change this if you want to change the origin
+    particle_list.append(Particle(x, y, angle, 1.0 / NUMBER_OF_PARTICLES)) #change this if you want to change the origin
 #e.g. change Particle(0,0,0,0) to Particle(100, 500, 0, 0) for origin at (100, 500)
 
 def draw():
@@ -205,9 +207,10 @@ def resample():
 
 
 def update_probability(sonar_distance):
-  for p in particle_list:
-    p.calculate_likelihood(sonar_distance)
-  resample()
+  if sonar_distance < 255:
+    for p in particle_list:
+      p.calculate_likelihood(sonar_distance)
+    resample()
   
 def demo_resampling_and_normalising():
   global particle_list
